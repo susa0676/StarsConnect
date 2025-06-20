@@ -1,24 +1,33 @@
 "use client"
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { User, GraduationCap, Briefcase, Shield } from 'lucide-react';
 
-type UserType = 'Student' | 'Alumni' | 'Admin';
-
-const RegisterPage: React.FC = () => {
-  const [userType, setUserType] = useState<UserType>('Student');
+const RegistrationForm = () => {
+  const [selectedRole, setSelectedRole] = useState('');
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    degree: '',
-    branch: '',
-    yearOfStudy: ''
+    // Student fields
+    rollNo: '',
+    dept: '',
+    year: '',
+    domainInterests: '',
+    skills: '',
+    // Alumni fields
+    passingYear: '',
+    company: '',
+    position: '',
+    expertise: '',
+    availability: '',
+    // Admin fields
+    adminCode: '',
+    designation: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -26,267 +35,446 @@ const RegisterPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle registration logic here
-    console.log('Registration attempt:', { userType, ...formData });
+  const handleRoleChange = (role) => {
+    setSelectedRole(role);
+    // Reset role-specific fields when switching roles
+    setFormData(prev => ({
+      ...prev,
+      rollNo: '',
+      dept: '',
+      year: '',
+      domainInterests: '',
+      skills: '',
+      passingYear: '',
+      company: '',
+      position: '',
+      expertise: '',
+      availability: '',
+      adminCode: '',
+      designation: ''
+    }));
   };
 
+  const handleSubmit = () => {
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match!');
+      return;
+    }
+    console.log('Registration data:', { role: selectedRole, ...formData });
+    alert(`Registration successful for ${selectedRole}!`);
+  };
+
+  const roleOptions = [
+    { value: 'student', label: 'Student', icon: GraduationCap, color: 'bg-blue-500' },
+    { value: 'alumni', label: 'Alumni', icon: Briefcase, color: 'bg-green-500' },
+    { value: 'admin', label: 'Admin', icon: Shield, color: 'bg-purple-500' }
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-purple-500 rounded-lg flex items-center justify-center">
-                <div className="w-4 h-4 bg-white rounded-sm opacity-80"></div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 relative overflow-hidden">
+      {/* Background Logo Pattern */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+        <div className="flex flex-wrap justify-center items-center h-full gap-32">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-3 transform rotate-12">
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-6 h-6 bg-white rounded-md opacity-80"></div>
               </div>
-              <span className="text-xl font-bold text-red-600">STARS Connect</span>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              Create Your Account
-            </h2>
-            <p className="text-gray-600">
-              Connect, learn, and grow with your community.
-            </p>
-          </div>
-
-          {/* User Type Selection */}
-          <div className="mb-6">
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              {(['Student', 'Alumni', 'Admin'] as UserType[]).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setUserType(type)}
-                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all duration-200 ${
-                    userType === type
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Full Name */}
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                placeholder="Jane Doe"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-sm"
-                required
-              />
-            </div>
-
-            {/* Email Address */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="jane.doe@example.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-sm"
-                required
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="••••••••"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-sm pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
+              <div className="text-2xl font-bold text-gray-800">
+                STARS Connect
               </div>
             </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  placeholder="••••••••"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-sm pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showConfirmPassword ? (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Degree */}
-            <div>
-              <label htmlFor="degree" className="block text-sm font-medium text-gray-700 mb-1">
-                Degree
-              </label>
-              <select
-                id="degree"
-                name="degree"
-                value={formData.degree}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-sm"
-                required
-              >
-                <option value="">Select Degree</option>
-                <option value="Computer Science">Computer Science</option>
-                <option value="Information Technology">Information Technology</option>
-                <option value="Mechanical Engineering">Mechanical Engineering</option>
-                <option value="Electrical Engineering">Electrical Engineering</option>
-                <option value="Civil Engineering">Civil Engineering</option>
-                <option value="Electronics Engineering">Electronics Engineering</option>
-                <option value="Business Administration">Business Administration</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* Branch */}
-            <div>
-              <label htmlFor="branch" className="block text-sm font-medium text-gray-700 mb-1">
-                Branch
-              </label>
-              <select
-                id="branch"
-                name="branch"
-                value={formData.branch}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-sm"
-                required
-              >
-                <option value="">Select Branch</option>
-                <option value="Software Engineering">Software Engineering</option>
-                <option value="Data Science">Data Science</option>
-                <option value="Artificial Intelligence">Artificial Intelligence</option>
-                <option value="Cybersecurity">Cybersecurity</option>
-                <option value="Web Development">Web Development</option>
-                <option value="Mobile Development">Mobile Development</option>
-                <option value="Cloud Computing">Cloud Computing</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* Year of Study */}
-            <div>
-              <label htmlFor="yearOfStudy" className="block text-sm font-medium text-gray-700 mb-1">
-                Year of Study
-              </label>
-              <select
-                id="yearOfStudy"
-                name="yearOfStudy"
-                value={formData.yearOfStudy}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-sm"
-                required
-              >
-                <option value="">Select Year</option>
-                <option value="Freshman">Freshman</option>
-                <option value="Sophomore">Sophomore</option>
-                <option value="Junior">Junior</option>
-                <option value="Senior">Senior</option>
-                <option value="Graduate">Graduate</option>
-                <option value="PhD">PhD</option>
-              </select>
-            </div>
-
-            {/* Register Button */}
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl mt-6"
-            >
-              Register
-            </button>
-          </form>
-
-          {/* Login Link */}
-          <div className="mt-6 text-center">
-            <span className="text-gray-600 text-sm">Already have an account? </span>
-            <Link 
-              href="/login" 
-              className="text-red-600 hover:text-red-700 font-semibold transition-colors text-sm"
-            >
-              Login
-            </Link>
-          </div>
-        </div>
-
-        {/* Additional Info */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
-            By creating an account, you agree to our{' '}
-            <Link href="/terms" className="text-red-600 hover:underline">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="text-red-600 hover:underline">
-              Privacy Policy
-            </Link>
-          </p>
+          ))}
         </div>
       </div>
+      
+      <div className="max-w-2xl mx-auto relative z-10">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
+          <div className="text-center mb-8">
+            <div className="flex justify-center items-center mb-4 space-x-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-6 h-6 bg-white rounded-md"></div>
+              </div>
+              <div className="text-2xl font-bold text-gray-800">
+                STARS Connect
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
+            <p className="text-gray-600">Connect, learn, and grow with our community.</p>
+          </div>
+
+          <div className="space-y-6">
+            {/* Role Selection */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">Select Your Role</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {roleOptions.map((role) => {
+                  const IconComponent = role.icon;
+                  return (
+                    <button
+                      key={role.value}
+                      type="button"
+                      onClick={() => handleRoleChange(role.value)}
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                        selectedRole === role.value
+                          ? `border-indigo-500 bg-indigo-50 shadow-md`
+                          : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center space-y-2">
+                        <div className={`p-2 rounded-lg ${role.color} text-white`}>
+                          <IconComponent className="w-6 h-6" />
+                        </div>
+                        <span className="font-medium text-gray-900">{role.label}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {selectedRole && (
+              <div className="space-y-6 animate-fadeIn">
+                {/* Common Fields */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                    Basic Information
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Password *
+                      </label>
+                      <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        placeholder="Create a password"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Confirm Password *
+                      </label>
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        placeholder="Confirm your password"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Role-specific Fields */}
+                {selectedRole === 'student' && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                      Student Information
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Roll Number *
+                        </label>
+                        <input
+                          type="text"
+                          name="rollNo"
+                          value={formData.rollNo}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                          placeholder="e.g., 21CS001"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Department *
+                        </label>
+                        <select
+                          name="dept"
+                          value={formData.dept}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        >
+                          <option value="">Select Department</option>
+                          <option value="CSE">Computer Science</option>
+                          <option value="ECE">Electronics & Communication</option>
+                          <option value="EEE">Electrical & Electronics</option>
+                          <option value="MECH">Mechanical</option>
+                          <option value="CIVIL">Civil</option>
+                          <option value="IT">Information Technology</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Year *
+                        </label>
+                        <select
+                          name="year"
+                          value={formData.year}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        >
+                          <option value="">Select Year</option>
+                          <option value="1">1st Year</option>
+                          <option value="2">2nd Year</option>
+                          <option value="3">3rd Year</option>
+                          <option value="4">4th Year</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Domain Interests *
+                      </label>
+                      <input
+                        type="text"
+                        name="domainInterests"
+                        value={formData.domainInterests}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        placeholder="e.g., Web Development, AI/ML, Data Science"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Skills *
+                      </label>
+                      <textarea
+                        name="skills"
+                        value={formData.skills}
+                        onChange={handleInputChange}
+                        required
+                        rows="3"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        placeholder="List your technical skills (e.g., JavaScript, Python, React)"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {selectedRole === 'alumni' && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                      Alumni Information
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Passing Year *
+                        </label>
+                        <input
+                          type="number"
+                          name="passingYear"
+                          value={formData.passingYear}
+                          onChange={handleInputChange}
+                          required
+                          min="1990"
+                          max="2025"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                          placeholder="e.g., 2020"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Current Company *
+                        </label>
+                        <input
+                          type="text"
+                          name="company"
+                          value={formData.company}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                          placeholder="e.g., Google, Microsoft, Startup"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Current Position *
+                      </label>
+                      <input
+                        type="text"
+                        name="position"
+                        value={formData.position}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        placeholder="e.g., Software Engineer, Product Manager"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Expertise Areas *
+                      </label>
+                      <textarea
+                        name="expertise"
+                        value={formData.expertise}
+                        onChange={handleInputChange}
+                        required
+                        rows="3"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        placeholder="Describe your areas of expertise and what you can mentor students in"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Availability for Mentoring *
+                      </label>
+                      <select
+                        name="availability"
+                        value={formData.availability}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                      >
+                        <option value="">Select Availability</option>
+                        <option value="high">High (Available most of the time)</option>
+                        <option value="medium">Medium (Available on weekends)</option>
+                        <option value="low">Low (Available occasionally)</option>
+                        <option value="none">Not available for mentoring</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {selectedRole === 'admin' && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                      Admin Information
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Admin Code *
+                        </label>
+                        <input
+                          type="text"
+                          name="adminCode"
+                          value={formData.adminCode}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                          placeholder="Optional admin verification code"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">Leave blank if not provided</p>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Designation *
+                        </label>
+                        <input
+                          type="text"
+                          name="designation"
+                          value={formData.designation}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                          placeholder="e.g., System Administrator, Faculty Coordinator"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <div className="pt-6">
+                  <button
+                    onClick={handleSubmit}
+                    className="w-full bg-gradient-to-r from-red-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:from-red-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200"
+                  >
+                    Create {selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)} Account
+                  </button>
+                </div>
+
+                <div className="text-center pt-4">
+                  <p className="text-gray-600">
+                    Already have an account?{' '}
+                    <a href="#" className="text-indigo-600 hover:text-indigo-800 font-medium">
+                      Sign in here
+                    </a>
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out;
+        }
+      `}</style>
     </div>
   );
 };
 
-export default RegisterPage;
+export default RegistrationForm;
