@@ -1,480 +1,222 @@
 "use client"
-import React, { useState } from 'react';
-import { User, GraduationCap, Briefcase, Shield } from 'lucide-react';
 
-const RegistrationForm = () => {
-  const [selectedRole, setSelectedRole] = useState('');
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    // Student fields
-    rollNo: '',
-    dept: '',
-    year: '',
-    domainInterests: '',
-    skills: '',
-    // Alumni fields
-    passingYear: '',
-    company: '',
-    position: '',
-    expertise: '',
-    availability: '',
-    // Admin fields
-    adminCode: '',
-    designation: ''
-  });
+import React, { useState } from "react";
+import {
+  BookOpen,
+  Users,
+  MessageSquare,
+  Calendar,
+  Clock,
+  MessageCircle,
+  UserPlus,
+  Activity,
+  Award,
+  TrendingUp,
+  LucideIcon,
+} from "lucide-react";
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+// Types
+interface CurrentUser {
+  name: string;
+  role: "student" | "alumni" | "admin";
+  avatar: string;
+  department: string;
+  year: string;
+}
 
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+interface Stat {
+  label: string;
+  value: string;
+  icon: LucideIcon;
+  color: string;
+}
+
+interface ActivityLog {
+  action: string;
+  time: string;
+}
+
+interface QuickAction {
+  label: string;
+  icon: LucideIcon;
+  color: string;
+}
+
+interface Event {
+  title: string;
+  date: string;
+  type: string;
+}
+
+interface StatsCardProps {
+  stat: Stat;
+}
+
+const Dashboard = () => {
+  const currentUser: CurrentUser = {
+    name: "John Doe",
+    role: "student",
+    avatar:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&auto=format",
+    department: "Computer Science",
+    year: "3rd Year",
   };
 
-  const handleRoleChange = (role) => {
-    setSelectedRole(role);
-    // Reset role-specific fields when switching roles
-    setFormData(prev => ({
-      ...prev,
-      rollNo: '',
-      dept: '',
-      year: '',
-      domainInterests: '',
-      skills: '',
-      passingYear: '',
-      company: '',
-      position: '',
-      expertise: '',
-      availability: '',
-      adminCode: '',
-      designation: ''
-    }));
+  const getRoleBasedStats = (): Stat[] => {
+    const baseStats: Record<string, Stat[]> = {
+      student: [
+        { label: "Resources Read", value: "12", icon: BookOpen, color: "text-blue-600 dark:text-blue-400" },
+        { label: "Mentorship Sessions", value: "8", icon: Users, color: "text-green-600 dark:text-green-400" },
+        { label: "Forum Posts", value: "24", icon: MessageSquare, color: "text-purple-600 dark:text-purple-400" },
+        { label: "Events Attended", value: "6", icon: Calendar, color: "text-orange-600 dark:text-orange-400" },
+      ],
+      alumni: [
+        { label: "Students Mentored", value: "15", icon: UserPlus, color: "text-blue-600 dark:text-blue-400" },
+        { label: "Sessions Conducted", value: "32", icon: Activity, color: "text-green-600 dark:text-green-400" },
+        { label: "Success Stories", value: "8", icon: Award, color: "text-purple-600 dark:text-purple-400" },
+        { label: "Community Impact", value: "95%", icon: TrendingUp, color: "text-orange-600 dark:text-orange-400" },
+      ],
+      admin: [
+        { label: "Total Users", value: "1,247", icon: Users, color: "text-blue-600 dark:text-blue-400" },
+        { label: "Active Sessions", value: "89", icon: Activity, color: "text-green-600 dark:text-green-400" },
+        { label: "Reports Generated", value: "156", icon: BookOpen, color: "text-purple-600 dark:text-purple-400" },
+        { label: "System Uptime", value: "99.9%", icon: TrendingUp, color: "text-orange-600 dark:text-orange-400" },
+      ],
+    };
+    return baseStats[currentUser.role] || baseStats.student;
   };
 
-  const handleSubmit = () => {
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
-      return;
-    }
-    console.log('Registration data:', { role: selectedRole, ...formData });
-    alert(`Registration successful for ${selectedRole}!`);
+  const getWelcomeMessage = (): string => {
+    const messages: Record<string, string> = {
+      student: `Welcome back, ${currentUser.name}! Ready to continue your learning journey?`,
+      alumni: `Hello ${currentUser.name}! Thank you for giving back to the community.`,
+      admin: `Good day, ${currentUser.name}! Here's your system overview.`,
+    };
+    return messages[currentUser.role];
   };
 
-  const roleOptions = [
-    { value: 'student', label: 'Student', icon: GraduationCap, color: 'bg-blue-500' },
-    { value: 'alumni', label: 'Alumni', icon: Briefcase, color: 'bg-green-500' },
-    { value: 'admin', label: 'Admin', icon: Shield, color: 'bg-purple-500' }
+  const StatsCard: React.FC<StatsCardProps> = ({ stat }) => {
+    const Icon = stat.icon;
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow duration-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.label}</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{stat.value}</p>
+          </div>
+          <div className={`p-3 rounded-lg bg-gray-50 dark:bg-gray-700 ${stat.color}`}>
+            <Icon className="w-6 h-6" />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const recentActivities: ActivityLog[] = [
+    { action: "Completed mentorship session", time: "2 hours ago" },
+    { action: "Posted in Q&A forum", time: "5 hours ago" },
+    { action: "Registered for webinar", time: "1 day ago" },
+    { action: "Updated profile information", time: "2 days ago" },
+  ];
+
+  const quickActions: QuickAction[] = [
+    { label: "Schedule Meeting", icon: Calendar, color: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" },
+    { label: "Ask Question", icon: MessageCircle, color: "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400" },
+    { label: "Join Event", icon: Users, color: "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400" },
+    { label: "View Resources", icon: BookOpen, color: "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400" },
+  ];
+
+  const upcomingEvents: Event[] = [
+    { title: "Career Guidance Workshop", date: "Tomorrow, 2:00 PM", type: "Workshop" },
+    { title: "Alumni Networking Session", date: "June 25, 6:00 PM", type: "Networking" },
+    { title: "Technical Interview Prep", date: "June 28, 4:00 PM", type: "Mentorship" },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 relative overflow-hidden">
-      {/* Background Logo Pattern */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <div className="flex flex-wrap justify-center items-center h-full gap-32">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex items-center space-x-3 transform rotate-12">
-              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <div className="w-6 h-6 bg-white rounded-md opacity-80"></div>
+    <div className="p-6 space-y-8">
+      {/* Welcome Section */}
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
+        <h2 className="text-2xl font-bold mb-2">{getWelcomeMessage()}</h2>
+        <p className="text-indigo-100">
+          {currentUser.role === "student" && `${currentUser.department} • ${currentUser.year}`}
+          {currentUser.role === "alumni" && "Making a difference in student lives"}
+          {currentUser.role === "admin" && "System administrator dashboard"}
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {getRoleBasedStats().map((stat, idx) => (
+          <StatsCard key={idx} stat={stat} />
+        ))}
+      </div>
+
+      {/* Recent Activity & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Activity */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
+            <Clock className="w-5 h-5 text-gray-400" />
+          </div>
+          <div className="space-y-4">
+            {recentActivities.map((activity, idx) => (
+              <div key={idx} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                <div className="w-2 h-2 bg-indigo-500 rounded-full mt-2" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{activity.action}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{activity.time}</p>
+                </div>
               </div>
-              <div className="text-2xl font-bold text-gray-800">
-                STARS Connect
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {quickActions.map((action, idx) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={idx}
+                  className={`p-4 rounded-lg text-left hover:scale-105 transition-all duration-200 ${action.color}`}
+                >
+                  <Icon className="w-6 h-6 mb-2" />
+                  <p className="text-sm font-medium">{action.label}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Upcoming Events */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upcoming Events</h3>
+        <div className="space-y-4">
+          {upcomingEvents.map((event, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="w-3 h-3 bg-indigo-500 rounded-full" />
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white">{event.title}</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{event.date}</p>
+                </div>
               </div>
+              <span className="px-3 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 rounded-full">
+                {event.type}
+              </span>
             </div>
           ))}
         </div>
       </div>
-      
-      <div className="max-w-2xl mx-auto relative z-10">
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
-          <div className="text-center mb-8">
-            <div className="flex justify-center items-center mb-4 space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <div className="w-6 h-6 bg-white rounded-md"></div>
-              </div>
-              <div className="text-2xl font-bold text-gray-800">
-                STARS Connect
-              </div>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Connect, learn, and grow with our community.</p>
-          </div>
-
-          <div className="space-y-6">
-            {/* Role Selection */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Select Your Role</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {roleOptions.map((role) => {
-                  const IconComponent = role.icon;
-                  return (
-                    <button
-                      key={role.value}
-                      type="button"
-                      onClick={() => handleRoleChange(role.value)}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                        selectedRole === role.value
-                          ? `border-indigo-500 bg-indigo-50 shadow-md`
-                          : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center space-y-2">
-                        <div className={`p-2 rounded-lg ${role.color} text-white`}>
-                          <IconComponent className="w-6 h-6" />
-                        </div>
-                        <span className="font-medium text-gray-900">{role.label}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {selectedRole && (
-              <div className="space-y-6 animate-fadeIn">
-                {/* Common Fields */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                    Basic Information
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Full Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        placeholder="Enter your full name"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        placeholder="Enter your email"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Password *
-                      </label>
-                      <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        placeholder="Create a password"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Confirm Password *
-                      </label>
-                      <input
-                        type="password"
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        placeholder="Confirm your password"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Role-specific Fields */}
-                {selectedRole === 'student' && (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                      Student Information
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Roll Number *
-                        </label>
-                        <input
-                          type="text"
-                          name="rollNo"
-                          value={formData.rollNo}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                          placeholder="e.g., 21CS001"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Department *
-                        </label>
-                        <select
-                          name="dept"
-                          value={formData.dept}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        >
-                          <option value="">Select Department</option>
-                          <option value="CSE">Computer Science</option>
-                          <option value="ECE">Electronics & Communication</option>
-                          <option value="EEE">Electrical & Electronics</option>
-                          <option value="MECH">Mechanical</option>
-                          <option value="CIVIL">Civil</option>
-                          <option value="IT">Information Technology</option>
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Year *
-                        </label>
-                        <select
-                          name="year"
-                          value={formData.year}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        >
-                          <option value="">Select Year</option>
-                          <option value="1">1st Year</option>
-                          <option value="2">2nd Year</option>
-                          <option value="3">3rd Year</option>
-                          <option value="4">4th Year</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Domain Interests *
-                      </label>
-                      <input
-                        type="text"
-                        name="domainInterests"
-                        value={formData.domainInterests}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        placeholder="e.g., Web Development, AI/ML, Data Science"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Skills *
-                      </label>
-                      <textarea
-                        name="skills"
-                        value={formData.skills}
-                        onChange={handleInputChange}
-                        required
-                        rows="3"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        placeholder="List your technical skills (e.g., JavaScript, Python, React)"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {selectedRole === 'alumni' && (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                      Alumni Information
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Passing Year *
-                        </label>
-                        <input
-                          type="number"
-                          name="passingYear"
-                          value={formData.passingYear}
-                          onChange={handleInputChange}
-                          required
-                          min="1990"
-                          max="2025"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                          placeholder="e.g., 2020"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Current Company *
-                        </label>
-                        <input
-                          type="text"
-                          name="company"
-                          value={formData.company}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                          placeholder="e.g., Google, Microsoft, Startup"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Current Position *
-                      </label>
-                      <input
-                        type="text"
-                        name="position"
-                        value={formData.position}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        placeholder="e.g., Software Engineer, Product Manager"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Expertise Areas *
-                      </label>
-                      <textarea
-                        name="expertise"
-                        value={formData.expertise}
-                        onChange={handleInputChange}
-                        required
-                        rows="3"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        placeholder="Describe your areas of expertise and what you can mentor students in"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Availability for Mentoring *
-                      </label>
-                      <select
-                        name="availability"
-                        value={formData.availability}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                      >
-                        <option value="">Select Availability</option>
-                        <option value="high">High (Available most of the time)</option>
-                        <option value="medium">Medium (Available on weekends)</option>
-                        <option value="low">Low (Available occasionally)</option>
-                        <option value="none">Not available for mentoring</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                {selectedRole === 'admin' && (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                      Admin Information
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Admin Code *
-                        </label>
-                        <input
-                          type="text"
-                          name="adminCode"
-                          value={formData.adminCode}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                          placeholder="Optional admin verification code"
-                        />
-                        <p className="text-sm text-gray-500 mt-1">Leave blank if not provided</p>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Designation *
-                        </label>
-                        <input
-                          type="text"
-                          name="designation"
-                          value={formData.designation}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                          placeholder="e.g., System Administrator, Faculty Coordinator"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Submit Button */}
-                <div className="pt-6">
-                  <button
-                    onClick={handleSubmit}
-                    className="w-full bg-gradient-to-r from-red-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:from-red-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200"
-                  >
-                    Create {selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)} Account
-                  </button>
-                </div>
-
-                <div className="text-center pt-4">
-                  <p className="text-gray-600">
-                    Already have an account?{' '}
-                    <a href="#" className="text-indigo-600 hover:text-indigo-800 font-medium">
-                      Sign in here
-                    </a>
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out;
-        }
-      `}</style>
     </div>
   );
 };
 
-export default RegistrationForm;
+export default Dashboard;
