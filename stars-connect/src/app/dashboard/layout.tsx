@@ -13,7 +13,6 @@ interface LayoutProps {
 
 const sidebarItems = [
   { id: "dashboard", label: "Dashboard", icon: Home, href: "/dashboard" },
-  { id: "profile", label: "Profile Setup", icon: User, href: "/dashboard/profile" },
   { id: "resources", label: "Resources", icon: BookOpen, href: "/dashboard/resources" },
   { id: "mentors", label: "Mentors", icon: Users, href: "/dashboard/mentors" },
   { id: "forum", label: "Q&A Forum", icon: MessageCircle, href: "/dashboard/forum" },
