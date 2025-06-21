@@ -71,10 +71,10 @@ const LandingPage: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <button className="bg-red-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                Get Started →
+               <Link href="/login"> Started →</Link>
               </button>
               <button className="border border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                Learn More
+                <Link href="/about">Learn More</Link>
               </button>
             </div>
 

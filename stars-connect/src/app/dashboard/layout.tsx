@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import React, { useState, useEffect, ReactNode } from "react";
 import {
   Menu, X, Home, User, BookOpen, Users,
@@ -71,15 +71,11 @@ const Layout = ({ children }: LayoutProps) => {
             {/* Navigation */}
             <nav className="flex-1 px-4 py-6 space-y-2">
               {sidebarItems.map((item) => (
-                <a
-                  key={item.id}
-                  href={item.href}
-                  className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg transition hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <item.icon className="w-5 h-5 mr-3" />
-                  <span className="font-medium">{item.label}</span>
-                </a>
-              ))}
+  <Link key={item.id} href={item.href} className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg transition hover:bg-gray-100 dark:hover:bg-gray-800">
+    <item.icon className="w-5 h-5 mr-3" />
+    <span className="font-medium">{item.label}</span>
+  </Link>
+))}
             </nav>
 
             {/* Dark Mode Toggle */}
@@ -115,7 +111,6 @@ const Layout = ({ children }: LayoutProps) => {
                   <Menu className="w-6 h-6" />
                 </button>
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white capitalize">
-                  Dashboard
                 </h1>
               </div>
 
