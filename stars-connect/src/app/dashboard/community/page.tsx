@@ -1,5 +1,6 @@
 "use client"
 import { useState } from 'react';
+ import { Dialog } from '@headlessui/react';
 import { Search, Plus, MessageCircle, Heart, Share2, Bookmark, TrendingUp, Users, Calendar, Award, Eye, ThumbsUp, Filter, MoreHorizontal } from 'lucide-react';
 
 interface Post {
@@ -38,6 +39,12 @@ const Community = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedFilter, setSelectedFilter] = useState<string>('Latest');
+ 
+
+const [isNewPostOpen, setIsNewPostOpen] = useState(false);
+const [activePost, setActivePost] = useState<Post | null>(null);
+const [comment, setComment] = useState("");
+
 
   const posts: Post[] = [
     {
@@ -178,10 +185,14 @@ const Community = () => {
               <h1 className="text-2xl font-bold text-gray-900">Community</h1>
               <p className="text-gray-600 mt-1">Connect, share, and learn together</p>
             </div>
-            <button className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              New Post
-            </button>
+            <button
+  onClick={() => setIsNewPostOpen(true)}
+  className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors flex items-center gap-2"
+>
+  <Plus className="w-4 h-4" />
+  New Post
+</button>
+
           </div>
 
           {/* Search and Filters */}
@@ -250,9 +261,13 @@ const Community = () => {
                     </div>
 
                     {/* Post Title */}
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-red-700 cursor-pointer">
-                      {post.title}
-                    </h3>
+                    <h3
+  className="text-lg font-semibold text-gray-900 mb-2 hover:text-red-700 cursor-pointer"
+  onClick={() => setActivePost(post)}
+>
+  {post.title}
+</h3>
+
 
                     {/* Post Content */}
                     <p className="text-gray-600 mb-3 line-clamp-3">
@@ -402,6 +417,64 @@ const Community = () => {
           </div>
         </div>
       </div>
+      {/* New Post Modal */}
+<Dialog open={isNewPostOpen} onClose={() => setIsNewPostOpen(false)} className="relative z-50">
+  <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+  <div className="fixed inset-0 flex items-center justify-center p-4">
+    <Dialog.Panel className="w-full max-w-lg bg-white rounded-lg p-6 space-y-4 shadow-lg">
+      <Dialog.Title className="text-xl font-bold text-gray-900">Create New Post</Dialog.Title>
+      <input type="text" placeholder="Title" className="w-full p-2 border rounded" />
+      <textarea placeholder="What's on your mind?" className="w-full p-2 border rounded h-32" />
+      <div className="flex justify-end">
+        <button
+          onClick={() => setIsNewPostOpen(false)}
+          className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800"
+        >
+          Post
+        </button>
+      </div>
+    </Dialog.Panel>
+  </div>
+</Dialog>
+
+{/* Post Detail Modal */}
+<Dialog open={!!activePost} onClose={() => setActivePost(null)} className="relative z-50">
+  <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+  <div className="fixed inset-0 flex items-center justify-center p-4">
+    {activePost && (
+      <Dialog.Panel className="w-full max-w-2xl bg-white rounded-lg p-6 space-y-4 shadow-lg max-h-[90vh] overflow-y-auto">
+        <Dialog.Title className="text-xl font-bold text-gray-900">{activePost.title}</Dialog.Title>
+        <p className="text-gray-600">{activePost.content}</p>
+        <div className="flex gap-4 text-sm text-gray-500">
+          <span>{activePost.likes} Likes</span>
+          <span>{activePost.comments} Comments</span>
+          <span>{activePost.views} Views</span>
+        </div>
+        <div className="flex gap-4">
+          <button onClick={() => toggleLike(activePost.id)} className="text-red-600 font-medium">Like</button>
+          <button className="text-blue-600 font-medium">Comment</button>
+          <button className="text-gray-600 font-medium">Share</button>
+        </div>
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Write a comment..."
+          className="w-full p-2 border rounded h-24"
+        />
+        <button
+          onClick={() => {
+            console.log("Comment submitted:", comment);
+            setComment("");
+          }}
+          className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800"
+        >
+          Submit Comment
+        </button>
+      </Dialog.Panel>
+    )}
+  </div>
+</Dialog>
+
     </div>
   );
 };

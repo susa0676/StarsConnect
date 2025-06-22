@@ -1,6 +1,8 @@
 "use client"
 import { useState } from 'react';
-import { Search, Plus, MessageCircle, ArrowUp, ChevronDown, User } from 'lucide-react';
+import Link from 'next/link';
+
+import { Search, Plus, MessageCircle, ArrowUp, ChevronDown, User ,X} from 'lucide-react';
 
 interface Question {
   id: number;
@@ -19,6 +21,8 @@ const QAForum = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showMoreTags, setShowMoreTags] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   const questions: Question[] = [
     {
@@ -132,33 +136,7 @@ const QAForum = () => {
   return (
     <div className="flex gap-6 p-6 bg-gray-50 min-h-screen">
       {/* Sidebar */}
-      <div className="w-64 space-y-4">
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="bg-red-700 text-white p-4 rounded-t-lg flex items-center gap-2">
-            <MessageCircle className="w-5 h-5" />
-            <span className="font-semibold">Q&A Forum</span>
-          </div>
-          <div className="p-4 space-y-3">
-            <div className="flex items-center gap-3 text-gray-600 hover:text-gray-900 cursor-pointer">
-              <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-              <span className="text-sm">Trending Topics</span>
-            </div>
-            <div className="flex items-center gap-3 text-gray-600 hover:text-gray-900 cursor-pointer">
-              <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-              <span className="text-sm">My Questions</span>
-            </div>
-            <div className="flex items-center gap-3 text-gray-600 hover:text-gray-900 cursor-pointer">
-              <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-              <span className="text-sm">Saved Questions</span>
-            </div>
-            <div className="flex items-center gap-3 text-gray-600 hover:text-gray-900 cursor-pointer">
-              <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-              <span className="text-sm">Support</span>
-              <ChevronDown className="w-4 h-4 ml-auto" />
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
       {/* Main Content */}
       <div className="flex-1">
@@ -166,10 +144,14 @@ const QAForum = () => {
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b">
             <h1 className="text-2xl font-bold text-gray-900">Q&A Forum</h1>
-            <button className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Ask Question
-            </button>
+            <button
+  onClick={() => setIsModalOpen(true)}
+  className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors flex items-center gap-2"
+>
+  <Plus className="w-4 h-4" />
+  Ask Question
+</button>
+
           </div>
 
           {/* Search and Tags */}
@@ -262,9 +244,12 @@ const QAForum = () => {
                             <span>{question.upvotes} Upvotes</span>
                           </div>
                         </div>
-                        <button className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors text-sm">
-                          View Question
-                        </button>
+                        <Link href={`/dashboard/forum/${question.id}`}>
+  <button className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors text-sm">
+    View Question
+  </button>
+</Link>
+
                       </div>
                     </div>
                   </div>
@@ -282,6 +267,44 @@ const QAForum = () => {
           </div>
         </div>
       </div>
+      {isModalOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white rounded-lg shadow-lg w-full max-w-xl p-6 relative">
+      <button
+        onClick={() => setIsModalOpen(false)}
+        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <h2 className="text-xl font-bold mb-4 text-gray-800">Ask a New Question</h2>
+      <form className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Title</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+            placeholder="Enter your question title"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Description</label>
+          <textarea
+            rows={4}
+            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+            placeholder="Describe your question in detail..."
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800"
+        >
+          Post Question
+        </button>
+      </form>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
