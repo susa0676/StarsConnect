@@ -1,4 +1,5 @@
 "use client"
+import Link from 'next/link';
 import { useState } from 'react';
 import { Search, MapPin, Building, Award, Clock, Calendar, Star } from 'lucide-react';
 
@@ -232,73 +233,61 @@ const FindMentor = () => {
         {/* Mentors Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredMentors.map((mentor) => (
-            <div key={mentor.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-              {/* Profile Header */}
-              <div className="p-6 text-center">
-                <div className="w-20 h-20 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
-                  <span className="text-2xl font-bold text-gray-600">
-                    {mentor.name.split(' ').map(n => n[0]).join('')}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-1">{mentor.name}</h3>
-                <p className="text-sm text-gray-600 mb-2">{mentor.title}</p>
-                <div className="flex items-center justify-center text-sm text-gray-500 mb-2">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {mentor.location}
-                </div>
-                <div className="flex items-center justify-center text-sm text-gray-600 mb-3">
-                  <Award className="w-4 h-4 mr-1" />
-                  {mentor.experience}
-                </div>
-                
-                {/* Rating and Sessions */}
-                <div className="flex items-center justify-center gap-4 text-sm text-gray-600 mb-4">
-                  <div className="flex items-center">
-                    <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                    {mentor.rating}
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {mentor.sessions} sessions
-                  </div>
-                </div>
+  <Link href={`/dashboard/mentors/${mentor.id}`} key={mentor.id}>
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
+      {/* Profile Header */}
+      <div className="p-6 text-center">
+        <div className="w-20 h-20 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
+          <span className="text-2xl font-bold text-gray-600">
+            {mentor.name.split(' ').map(n => n[0]).join('')}
+          </span>
+        </div>
+        <h3 className="font-semibold text-gray-900 mb-1">{mentor.name}</h3>
+        <p className="text-sm text-gray-600 mb-2">{mentor.title}</p>
+        <div className="flex items-center justify-center text-sm text-gray-500 mb-2">
+          <MapPin className="w-4 h-4 mr-1" />
+          {mentor.location}
+        </div>
+        <div className="flex items-center justify-center text-sm text-gray-600 mb-3">
+          <Award className="w-4 h-4 mr-1" />
+          {mentor.experience}
+        </div>
 
-                {/* Expertise Tags */}
-                <div className="flex flex-wrap gap-1 justify-center mb-4">
-                  {mentor.expertise.slice(0, 2).map((skill, index) => (
-                    <span key={index} className="px-2 py-1 bg-gray-100 text-xs text-gray-600 rounded">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
+        {/* Rating and Sessions */}
+        <div className="flex items-center justify-center gap-4 text-sm text-gray-600 mb-4">
+          <div className="flex items-center">
+            <Star className="w-4 h-4 text-yellow-400 mr-1" />
+            {mentor.rating}
+          </div>
+          <div className="flex items-center">
+            <Calendar className="w-4 h-4 mr-1" />
+            {mentor.sessions} sessions
+          </div>
+        </div>
 
-              {/* Availability Status */}
-              <div className="px-6 pb-4">
-                <div className={`text-center py-2 rounded-md text-sm font-medium ${
-                  mentor.available 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {mentor.available ? 'Available' : 'Unavailable'}
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <div className="px-6 pb-6">
-                <button 
-                  className={`w-full py-2 rounded-md text-sm font-medium transition-colors ${
-                    mentor.available
-                      ? 'bg-red-700 text-white hover:bg-red-800'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                  disabled={!mentor.available}
-                >
-                  {mentor.available ? 'Request Mentorship' : 'Request Mentorship'}
-                </button>
-              </div>
-            </div>
+        {/* Expertise Tags */}
+        <div className="flex flex-wrap gap-1 justify-center mb-4">
+          {mentor.expertise.slice(0, 2).map((skill, index) => (
+            <span key={index} className="px-2 py-1 bg-gray-100 text-xs text-gray-600 rounded">
+              {skill}
+            </span>
           ))}
+        </div>
+      </div>
+
+      {/* Availability Status */}
+      <div className="px-6 pb-4">
+        <div className={`text-center py-2 rounded-md text-sm font-medium ${
+          mentor.available 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-red-100 text-red-800'
+        }`}>
+          {mentor.available ? 'Available' : 'Unavailable'}
+        </div>
+      </div>
+    </div>
+  </Link>
+))}
         </div>
 
         {/* Footer */}

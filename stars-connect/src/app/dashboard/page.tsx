@@ -1,5 +1,6 @@
-"use client"
+"use client";
 
+import Link from "next/link";
 import React, { useState } from "react";
 import {
   BookOpen,
@@ -61,6 +62,8 @@ const Dashboard = () => {
     department: "Computer Science",
     year: "3rd Year",
   };
+
+  const [showMeetingModal, setShowMeetingModal] = useState(false);
 
   const getRoleBasedStats = (): Stat[] => {
     const baseStats: Record<string, Stat[]> = {
@@ -178,14 +181,35 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 gap-3">
             {quickActions.map((action, idx) => {
               const Icon = action.icon;
+
+              if (action.label === "Schedule Meeting") {
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setShowMeetingModal(true)}
+                    className={`p-4 w-full text-left rounded-lg hover:scale-105 transition-all duration-200 ${action.color}`}
+                  >
+                    <Icon className="w-6 h-6 mb-2" />
+                    <p className="text-sm font-medium">{action.label}</p>
+                  </button>
+                );
+              }
+
+              const linkMap: Record<string, string> = {
+                "Ask Question": "/dashboard/forum",
+                "Join Event": "/dashboard/events",
+                "View Resources": "/dashboard/resources",
+              };
+
+              const href = linkMap[action.label] || "#";
+
               return (
-                <button
-                  key={idx}
-                  className={`p-4 rounded-lg text-left hover:scale-105 transition-all duration-200 ${action.color}`}
-                >
-                  <Icon className="w-6 h-6 mb-2" />
-                  <p className="text-sm font-medium">{action.label}</p>
-                </button>
+                <Link key={idx} href={href}>
+                  <div className={`p-4 rounded-lg text-left cursor-pointer hover:scale-105 transition-all duration-200 ${action.color}`}>
+                    <Icon className="w-6 h-6 mb-2" />
+                    <p className="text-sm font-medium">{action.label}</p>
+                  </div>
+                </Link>
               );
             })}
           </div>
@@ -215,6 +239,42 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
+
+      {/* Modal */}
+      {showMeetingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Schedule a Meeting</h2>
+              <button onClick={() => setShowMeetingModal(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                ✕
+              </button>
+            </div>
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
+                <input type="text" className="mt-1 w-full p-2 rounded border dark:bg-gray-700 dark:text-white" placeholder="Mentorship sync" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date & Time</label>
+                <input type="datetime-local" className="mt-1 w-full p-2 rounded border dark:bg-gray-700 dark:text-white" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                <textarea className="mt-1 w-full p-2 rounded border dark:bg-gray-700 dark:text-white" rows={3} placeholder="What is this meeting about?" />
+              </div>
+              <div className="text-right">
+                <button
+                  type="submit"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -33,7 +33,7 @@ const EventsMainContent = () => {
   const [currentUser] = useState<User>({
     id: 1,
     name: 'John Doe',
-    role: 'student', // Change this to 'admin' or 'alumni' to test different permissions
+    role: 'alumni', // Change this to 'admin' or 'alumni' to test different permissions
     email: 'john.doe@example.com'
   });
 

@@ -1,11 +1,34 @@
 "use client"
 import { useState } from 'react';
-import { Search, Download, FileText, Code, Database, Users, CheckSquare, Book } from 'lucide-react';
+import { Search, Download, FileText, Code, Database, Users, CheckSquare, Book, X } from 'lucide-react';
 
 const ResourceLibrary = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedFileType, setSelectedFileType] = useState('All');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  const handleUploadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !file) {
+      setError("Please enter a title and choose a file.");
+      return;
+    }
+    console.log("Uploading:", { title, description, file });
+    setSuccess(true);
+    setTimeout(() => {
+      setSuccess(false);
+      setTitle('');
+      setDescription('');
+      setFile(null);
+      setIsModalOpen(false);
+    }, 1500);
+  };
 
   const resources = [
     {
@@ -111,14 +134,53 @@ const ResourceLibrary = () => {
   });
 
   return (
-    <div className="flex gap-6 p-6 bg-gray-50 min-h-screen">
+    <div className="flex gap-6 p-6 bg-gray-50 min-h-screen relative">
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+            <button onClick={() => setIsModalOpen(false)} className="absolute top-2 right-2">
+              <X className="w-5 h-5 text-gray-500 hover:text-red-500" />
+            </button>
+            <h2 className="text-lg font-semibold mb-4">Upload Resource</h2>
+            <form onSubmit={handleUploadSubmit} className="space-y-4">
+              <input
+                type="text"
+                placeholder="Resource Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+              />
+              <textarea
+                placeholder="Description (optional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+              />
+              <input
+                type="file"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              {success && <p className="text-sm text-green-600">Upload successful!</p>}
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Upload</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="flex-1">
         <div className="bg-white rounded-lg shadow-sm">
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b">
             <h1 className="text-2xl font-bold text-gray-900">Resource Library</h1>
-            <button className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors flex items-center gap-2">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors flex items-center gap-2"
+            >
               <Download className="w-4 h-4" />
               Upload
             </button>
@@ -137,8 +199,7 @@ const ResourceLibrary = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              
-              <select 
+              <select
                 className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
@@ -148,8 +209,7 @@ const ResourceLibrary = () => {
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
-
-              <select 
+              <select
                 className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                 value={selectedFileType}
                 onChange={(e) => setSelectedFileType(e.target.value)}
@@ -195,7 +255,6 @@ const ResourceLibrary = () => {
 
       {/* Sidebar */}
       <div className="w-80 space-y-6">
-        {/* Recently Uploaded */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Recently Uploaded</h2>
           <div className="space-y-4">
@@ -217,7 +276,6 @@ const ResourceLibrary = () => {
           </div>
         </div>
 
-        {/* Popular Resources */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Popular Resources</h2>
           <div className="space-y-4">
