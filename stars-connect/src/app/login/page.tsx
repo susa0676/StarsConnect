@@ -33,7 +33,7 @@ const LoginPage: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center justify-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-r from-pink-400 to-purple-500 rounded-lg flex items-center justify-center shadow-2xl">
-              <div className="w-8 h-8 bg-white rounded-sm opacity-80"></div>
+              <div className="w-8 h-8 bg-white rounded-md opacity-80"></div>
             </div>
           </div>
           

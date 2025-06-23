@@ -78,7 +78,7 @@ const RegistrationForm = () => {
           {[...Array(6)].map((_, i) => (
             <div key={i} className="flex items-center space-x-3 transform rotate-12">
               <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <div className="w-6 h-6 bg-white rounded-md opacity-80"></div>
+                <div className="w-6 h-6 bg-white rounded-sm opacity-80"></div>
               </div>
               <div className="text-2xl font-bold text-gray-800">
                 STARS Connect

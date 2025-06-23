@@ -1,4 +1,5 @@
 "use client"
+import { useEffect } from 'react';
 import React, { useState } from 'react';
 import { Search, Calendar, Clock, MapPin, Users, Filter, Plus } from 'lucide-react';
 
@@ -28,12 +29,68 @@ const EventsMainContent = () => {
   const [selectedType, setSelectedType] = useState<string>('All Types');
   const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
   const [selectedAudience, setSelectedAudience] = useState<string>('All Audiences');
+  const [modalOpen, setModalOpen] = useState(false);
+const [editingEvent, setEditingEvent] = useState<Partial<Event> | null>(null);
+const [previewEvent, setPreviewEvent] = useState<Event | null>(null);
+
+const handleSaveEvent = (e: Partial<Event>) => {
+  if (e.id) {
+    // Update existing event in your data list
+  } else {
+    // Add new event with new ID
+  }
+  setModalOpen(false);
+};
+
+// And render the modal just before the return:
+
+
+
+  const EventModal = ({
+  isOpen, onClose, onSave, initialEvent = {}
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (e: Partial<Event>) => void;
+  initialEvent?: Partial<Event>;
+}) => {
+  const [form, setForm] = useState<Partial<Event>>(initialEvent);
+
+  const handleChange = (k: keyof Event, v: string) => setForm(prev => ({ ...prev, [k]: v }));
+
+  useEffect(() => { if (isOpen) setForm(initialEvent); }, [isOpen, initialEvent]);
+
+  return isOpen ? (
+    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-11/12 max-w-md space-y-4">
+        <h2 className="text-xl font-semibold">{initialEvent.id ? 'Edit Event' : 'New Event'}</h2>
+        {['title','type','date','time','description','organizer','category'].map((key) => (
+          <input
+            key={key}
+            type={key==='date' ? 'date' : 'text'}
+            placeholder={key.charAt(0).toUpperCase()+key.slice(1)}
+            value={(form as any)[key] || ''}
+            onChange={e => handleChange(key as keyof Event, e.target.value)}
+            className="w-full border rounded p-2"
+          />
+        ))}
+        <div className="flex justify-end gap-2 pt-4">
+          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+          <button onClick={() => onSave(form)} className="px-4 py-2 bg-red-600 text-white rounded">
+            {initialEvent.id ? 'Save' : 'Create'}
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;
+};
+
   
   // Mock current user - in real app, this would come from auth context
   const [currentUser] = useState<User>({
     id: 1,
     name: 'John Doe',
-    role: 'alumni', // Change this to 'admin' or 'alumni' to test different permissions
+    role: 'student', // Change this to 'admin' or 'alumni' to test different permissions
     email: 'john.doe@example.com'
   });
 
@@ -184,7 +241,7 @@ const EventsMainContent = () => {
         </div>
         <div className="flex flex-col items-end gap-2">
           {canCreateEvents ? (
-            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+            <button onClick={() => {setEditingEvent(null); setModalOpen(true);}} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
               <Plus size={20} />
               Create Event
             </button>
@@ -195,7 +252,7 @@ const EventsMainContent = () => {
               </div>
               <button 
                 disabled 
-                className="bg-gray-300 text-gray-500 px-4 py-2 rounded-lg flex items-center gap-2 cursor-not-allowed"
+                onClick={() => {setEditingEvent(null); setModalOpen(true);}} className="bg-gray-300 text-gray-500 px-4 py-2 rounded-lg flex items-center gap-2 cursor-not-allowed"
               >
                 <Plus size={20} />
                 Create Event
@@ -296,7 +353,11 @@ const EventsMainContent = () => {
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredEvents.map((event: Event) => (
-          <div key={event.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-shadow duration-300">
+          <div
+  key={event.id}
+  className="relative cursor-pointer bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-shadow duration-300"
+  onClick={() => setPreviewEvent(event)}
+>
             {/* Event Image */}
             <div className="relative h-48 bg-gradient-to-r from-gray-200 to-gray-300">
               <div className={`absolute top-3 left-3 ${getTypeColor(event.type)} text-white px-3 py-1 rounded-full text-sm font-medium`}>
@@ -343,15 +404,46 @@ const EventsMainContent = () => {
                   <button className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors duration-200">
                     Register for Event
                   </button>
-                  <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors duration-200 text-sm">
-                    Manage Event
-                  </button>
+                  {(currentUser.role === 'admin' || currentUser.role === 'alumni') && (
+  <button onClick={() => { setEditingEvent(event); setModalOpen(true); }} className="text-sm bg-grey-500 text-indigo-600 hover:underline ">
+    Manage Event
+  </button>
+)}
+
                 </div>
               )}
             </div>
           </div>
         ))}
       </div>
+      {previewEvent && (
+  <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-8 max-w-2xl w-full relative shadow-lg overflow-y-auto max-h-[90vh]">
+      <h2 className="text-2xl font-bold mb-2">{previewEvent.title}</h2>
+      <p className="text-gray-700 text-sm mb-4">{previewEvent.description}</p>
+
+      <div className="text-sm text-gray-600 space-y-2 mb-4">
+        <div><strong>Type:</strong> {previewEvent.type}</div>
+        <div><strong>Date:</strong> {previewEvent.date}</div>
+        <div><strong>Time:</strong> {previewEvent.time}</div>
+        <div><strong>Organizer:</strong> {previewEvent.organizer}</div>
+        <div><strong>Category:</strong> {previewEvent.category}</div>
+      </div>
+
+      <button className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition">
+        Register for Event
+      </button>
+
+      <button
+        onClick={() => setPreviewEvent(null)}
+        className="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-xl"
+      >
+        ×
+      </button>
+    </div>
+  </div>
+)}
+
 
       {/* No Results */}
       {filteredEvents.length === 0 && (
@@ -370,6 +462,12 @@ const EventsMainContent = () => {
           Showing {filteredEvents.length} of {events.length} events
         </div>
       )}
+      <EventModal
+  isOpen={modalOpen}
+  onClose={() => setModalOpen(false)}
+  onSave={handleSaveEvent}
+  initialEvent={editingEvent || {}}
+/>
     </div>
   );
 };
