@@ -49,11 +49,20 @@ interface StatsCardProps {
 const Dashboard = () => {
   const [currentUser,setcurrentUser] = useState({name:"",role:"",avatar:""})
   const router = useRouter();
-  const expire = localStorage.getItem("expire");
-  if(!expire || Date.now() > Number(expire)){
+const [expire, setExpire] = useState<string | null>(null);
+
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    const storedExpire = localStorage.getItem("expire");
+    setExpire(storedExpire);
+
+    if (!storedExpire || Date.now() > Number(storedExpire)) {
       localStorage.clear();
       router.push("/login");
+    }
   }
+}, [router]);
+
   useEffect(() =>{fetch("http://localhost:5000/dashboard/",{
     method:"POST",headers:{'content-type':'application/json'},body:JSON.stringify({id:localStorage.getItem('id')})
   }).then(res => res.json()).then(data => setcurrentUser(data.user)).catch(err => console.error(err))},[])
