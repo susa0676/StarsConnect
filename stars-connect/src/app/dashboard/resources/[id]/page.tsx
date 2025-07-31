@@ -3,6 +3,7 @@
 import { notFound } from "next/navigation";
 import React from "react";
 
+// Define the shape of the resource object
 interface Resource {
   id: string;
   filename: string;
@@ -13,22 +14,30 @@ interface Resource {
   downloadUrl: string;
 }
 
-type PageProps = {
+// ✅ Correct typing for the page function props
+interface PageProps {
   params: {
     id: string;
   };
-};
+}
 
+// Fetch data for the specific resource ID
 async function getResource(id: string): Promise<Resource | null> {
-  const res = await fetch(`http://localhost:5000/dashboard/resources/${id}`);
+  const res = await fetch(`http://localhost:5000/dashboard/resources/${id}`, {
+    cache: "no-store", // avoid caching during SSR
+  });
+
   if (res.ok) return res.json();
   return null;
 }
 
+// ✅ Correctly typed component
 export default async function ResourcePage({ params }: PageProps) {
   const resource = await getResource(params.id);
 
-  if (!resource) return <div className="p-6">Invalid resource ID</div>;
+  if (!resource) {
+    return <div className="p-6">Invalid resource ID</div>;
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -45,12 +54,12 @@ export default async function ResourcePage({ params }: PageProps) {
           title="File Preview"
         />
       </div>
+
       <div>
         <a
           href={resource.downloadUrl}
           download
           target="_blank"
-          rel="noopener noreferrer"
           className="inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
         >
           Download File
