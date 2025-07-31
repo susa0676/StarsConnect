@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {useRouter} from "next/navigation"
-//import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Plus,
@@ -13,45 +12,70 @@ import {
   X,
 } from "lucide-react";
 
-type Answer ={    
-  id:string,author:string,answer:string,timeAgo:string,aid:string,aa:string;
-}
+// ... types remain unchanged
+
+type Answer = {
+  id: string;
+  author: string;
+  answer: string;
+  timeAgo: string;
+  aid: string;
+  aa: string;
+};
 
 type Question = {
   id: string;
   title: string;
   description: string;
   author: string;
-  aid:string,
+  aid: string;
   aa: string;
   time: string;
   tags: string[];
   answers: Answer[];
   upvotes: number;
   hasAnswers: boolean;
-}
+};
 
 const QAForum = () => {
-  /* ---------- state ---------- */
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showMoreTags, setShowMoreTags] = useState(false);
-
   const [askModalOpen, setAskModalOpen] = useState(false);
   const [viewModalQ, setViewModalQ] = useState<Question | null>(null);
   const [answerText, setAnswerText] = useState("");
+  const [ques, setQues] = useState("");
+  const [des, setDes] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const [ques,setQues] = useState("");
-  const [des,setDes] = useState("");
-
+  const [questions, setQuestions] = useState<Question[]>([]);
   const router = useRouter();
-  const expire = localStorage.getItem("expire");
-  if(!expire || Date.now() > Number(expire)){
+
+  useEffect(() => {
+    // Move all localStorage logic inside useEffect
+    const expire = localStorage.getItem("expire");
+    if (!expire || Date.now() > Number(expire)) {
       localStorage.clear();
       router.push("/login");
-  }
+    } else {
+      setIsAuthenticated(true); // Continue rendering after auth check
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetch("http://localhost:5000/dashboard/forum/")
+        .then((res) => res.json())
+        .then((data) => setQuestions(data))
+        .catch((err) => console.error(err));
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    document.body.style.overflow = askModalOpen || viewModalQ ? "hidden" : "auto";
+  }, [askModalOpen, viewModalQ]);
   /* ---------- dummy data ---------- */
-  const [questions,setQuestions] = useState<Question[]>([]);
+ 
   function timeAgo(gettime :string):string{
     const now = Date.now();
     const date = parseInt(gettime.slice(2));
