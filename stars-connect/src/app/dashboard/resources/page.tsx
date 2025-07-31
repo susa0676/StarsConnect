@@ -286,7 +286,7 @@ const ResourceLibrary = () => {
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredResources.map((resource,index) => (
-                  <Link href={`/dashboard/resources/${resource.id}`} key={resource.id}>
+                  
 
                 <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3">
@@ -308,7 +308,7 @@ const ResourceLibrary = () => {
                       <Download className="w-4 h-4" />
                     </a>
                   </div>
-                </div></Link>
+                </div>
               ))}
             </div>
           </div>
