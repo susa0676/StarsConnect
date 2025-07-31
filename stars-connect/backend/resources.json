@@ -1,0 +1,24 @@
+[
+  {
+    "id": "1752080242643_cn",
+    "uid": "517520798541941",
+    "title": "Cn",
+    "description": "Nmdf",
+    "uploadedBy": "Saravanan",
+    "role": "Student",
+    "originalName": "ID.pdf",
+    "downloadUrl": "http://localhost:5000/dashboard/resources/download/1752080242643_cn.pdf",
+    "uploadedAt": "2025-07-09T16:57:22.654Z"
+  },
+  {
+    "id": "1752080114433_os",
+    "uid": "517520798541941",
+    "title": "Os",
+    "description": "Asdfgh",
+    "uploadedBy": "Saravanan",
+    "role": "Student",
+    "originalName": "22BIT0663_NIS_DA.docx",
+    "downloadUrl": "http://localhost:5000/dashboard/resources/download/1752080114433_os.docx",
+    "uploadedAt": "2025-07-09T16:55:14.450Z"
+  }
+]

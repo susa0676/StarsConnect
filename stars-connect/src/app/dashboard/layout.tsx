@@ -33,17 +33,19 @@ const adminItems = [
   { id: "user-mgmt", label: "User Management", icon: Users, href: "/dashboard/admin/usermanagement" },
   { id: "analytics", label: "Analytics", icon: BookOpen, href: "/dashboard/admin/analytics" },
 ];
-
+let role ='student'
 const Layout = ({ children }: LayoutProps) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
-  const [userRole, setUserRole] = useState("admin"); // Replace with actual user role
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+    role = localStorage.getItem('role') || "student"
+  }, [darkMode]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [userRole, setUserRole] = useState(role); // Replace with actual user role
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const router = useRouter();
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
+  
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
@@ -55,7 +57,7 @@ const Layout = ({ children }: LayoutProps) => {
           {/* Logo & Close Button */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <div className="w-4 h-4 bg-white rounded-sm opacity-80"></div>
               </div>
               <span className="text-xl font-bold text-gray-900 dark:text-white">STARS Connect</span>

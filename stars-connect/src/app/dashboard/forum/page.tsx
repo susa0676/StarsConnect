@@ -1,184 +1,209 @@
-"use client"
-import { useState } from 'react';
-import Link from 'next/link';
+"use client";
 
-import { Search, Plus, MessageCircle, ArrowUp, ChevronDown, User ,X} from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {useRouter} from "next/navigation"
+//import Link from "next/link";
+import {
+  Search,
+  Plus,
+  MessageCircle,
+  ArrowUp,
+  ChevronDown,
+  User,
+  X,
+} from "lucide-react";
 
-interface Question {
-  id: number;
+type Answer ={    
+  id:string,author:string,answer:string,timeAgo:string,aid:string,aa:string;
+}
+
+type Question = {
+  id: string;
   title: string;
   description: string;
   author: string;
-  authorAvatar: string;
-  timeAgo: string;
+  aid:string,
+  aa: string;
+  time: string;
   tags: string[];
-  answers: number;
+  answers: Answer[];
   upvotes: number;
   hasAnswers: boolean;
 }
 
 const QAForum = () => {
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  /* ---------- state ---------- */
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [showMoreTags, setShowMoreTags] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showMoreTags, setShowMoreTags] = useState(false);
 
+  const [askModalOpen, setAskModalOpen] = useState(false);
+  const [viewModalQ, setViewModalQ] = useState<Question | null>(null);
+  const [answerText, setAnswerText] = useState("");
 
-  const questions: Question[] = [
-    {
-      id: 1,
-      title: 'Best practices for securing web applications against XSS attacks?',
-      description: 'Looking for robust security measures against XSS in web apps. Any best practices?',
-      author: 'Alice Johnson',
-      authorAvatar: '/api/placeholder/40/40',
-      timeAgo: '2 days ago',
-      tags: ['Cybersecurity', 'Web Dev', 'Security'],
-      answers: 8,
-      upvotes: 85,
-      hasAnswers: true
-    },
-    {
-      id: 2,
-      title: 'How does Large Language Models (LLMs) attention mechanism work?',
-      description: 'Demystifying LLM attention: how it processes text, and what\'s multi-head attention?',
-      author: 'Bob Smith',
-      authorAvatar: '/api/placeholder/40/40',
-      timeAgo: '3 days ago',
-      tags: ['AI', 'ML', 'Natural Language Processing'],
-      answers: 5,
-      upvotes: 62,
-      hasAnswers: true
-    },
-    {
-      id: 3,
-      title: 'Optimizing React performance for large datasets?',
-      description: 'Tips for optimizing React rendering with large datasets and lists.',
-      author: 'Charlie Green',
-      authorAvatar: '/api/placeholder/40/40',
-      timeAgo: '4 days ago',
-      tags: ['Web Dev', 'React', 'Performance'],
-      answers: 12,
-      upvotes: 110,
-      hasAnswers: true
-    },
-    {
-      id: 4,
-      title: 'Docker containerization best practices for microservices?',
-      description: 'What are the recommended practices for containerizing microservices with Docker?',
-      author: 'Diana Miller',
-      authorAvatar: '/api/placeholder/40/40',
-      timeAgo: '5 days ago',
-      tags: ['DevOps', 'Docker', 'Microservices'],
-      answers: 7,
-      upvotes: 43,
-      hasAnswers: true
-    },
-    {
-      id: 5,
-      title: 'Understanding GraphQL vs REST API design patterns?',
-      description: 'When should I choose GraphQL over REST? What are the trade-offs?',
-      author: 'Eva Rodriguez',
-      authorAvatar: '/api/placeholder/40/40',
-      timeAgo: '6 days ago',
-      tags: ['API', 'GraphQL', 'Web Dev'],
-      answers: 9,
-      upvotes: 76,
-      hasAnswers: true
-    },
-    {
-      id: 6,
-      title: 'Machine Learning model deployment strategies for production?',
-      description: 'Looking for best practices on deploying ML models at scale in production environments.',
-      author: 'Frank Wilson',
-      authorAvatar: '/api/placeholder/40/40',
-      timeAgo: '1 week ago',
-      tags: ['ML', 'DevOps', 'Production'],
-      answers: 4,
-      upvotes: 38,
-      hasAnswers: true
+  const [ques,setQues] = useState("");
+  const [des,setDes] = useState("");
+
+  const router = useRouter();
+  const expire = localStorage.getItem("expire");
+  if(!expire || Date.now() > Number(expire)){
+      localStorage.clear();
+      router.push("/login");
+  }
+  /* ---------- dummy data ---------- */
+  const [questions,setQuestions] = useState<Question[]>([]);
+  function timeAgo(gettime :string):string{
+    const now = Date.now();
+    const date = parseInt(gettime.slice(2));
+    const secs = Math.floor((now - date)/1000)
+    const inter:{ago:string,sec:number}[] = [
+      {ago:"year",sec : 31536000},{ago:"month",sec:2592000},
+      {ago:"week",sec : 604800},{ago:"day",sec:86400},
+      {ago:"hour",sec : 3600},{ago:"minutes",sec:60},{ago:"seconds",sec:1}
+    ]
+    for(let i of inter){
+      const count = Math.floor(secs/i.sec)
+      if(count >= 1){ return `${count} ${i.ago}${count > 1?'s':''} ago`}
     }
+      return 'Just now'
+
+  }
+
+  const allTags = [
+    "AI",
+    "ML",
+    "Web Dev",
+    "Cybersecurity",
+    "React",
+    "Performance",
+    "DevOps",
+    "Docker",
+    "Microservices",
+    "API",
+    "GraphQL",
+    "Security",
+    "Natural Language Processing",
+    "Production",
+    "Database",
+    "Cloud",
+    "Python",
+    "JavaScript",
   ];
+  const displayedTags = showMoreTags ? allTags : allTags.slice(0, 6);
 
-  const allTags: string[] = ['AI', 'ML', 'Web Dev', 'Cybersecurity', 'React', 'Performance', 'DevOps', 'Docker', 'Microservices', 'API', 'GraphQL', 'Security', 'Natural Language Processing', 'Production', 'Database', 'Cloud', 'Python', 'JavaScript'];
-  const displayedTags: string[] = showMoreTags ? allTags : allTags.slice(0, 6);
-
-  const toggleTag = (tag: string): void => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
+  /* ---------- helper functions ---------- */
+  const toggleTag = (tag: string) =>
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
-  };
 
-  const getTagColor = (tag: string): string => {
-    const colors: Record<string, string> = {
-      'AI': 'bg-purple-100 text-purple-800',
-      'ML': 'bg-blue-100 text-blue-800',
-      'Web Dev': 'bg-green-100 text-green-800',
-      'Cybersecurity': 'bg-red-100 text-red-800',
-      'React': 'bg-cyan-100 text-cyan-800',
-      'Performance': 'bg-orange-100 text-orange-800',
-      'DevOps': 'bg-gray-100 text-gray-800',
-      'Security': 'bg-red-100 text-red-800',
-      'Natural Language Processing': 'bg-indigo-100 text-indigo-800'
-    };
-    return colors[tag] || 'bg-gray-100 text-gray-800';
-  };
+  const tagColor = (tag: string) =>
+    ({
+      AI: "bg-purple-100 text-purple-800",
+      ML: "bg-blue-100 text-blue-800",
+      "Web Dev": "bg-green-100 text-green-800",
+      Cybersecurity: "bg-red-100 text-red-800",
+      React: "bg-cyan-100 text-cyan-800",
+      Performance: "bg-orange-100 text-orange-800",
+      DevOps: "bg-gray-100 text-gray-800",
+      Security: "bg-red-100 text-red-800",
+      "Natural Language Processing": "bg-indigo-100 text-indigo-800",
+    }[tag] || "bg-gray-100 text-gray-800");
 
-  const filteredQuestions: Question[] = questions.filter(question => {
-    const matchesSearch = question.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         question.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTags = selectedTags.length === 0 || 
-                       selectedTags.some(tag => question.tags.includes(tag));
-    return matchesSearch && matchesTags;
+  const filteredQuestions = questions.filter((q) => {
+    const title = q.title?.toLowerCase().includes(searchTerm.toLowerCase()) || "";
+    const descr = q.description?.toLowerCase().includes(searchTerm.toLowerCase()) || "";
+    const searchMatch = title || descr;
+    const tagMatch =
+      selectedTags.length === 0 || selectedTags.some((t) => q.tags.includes(t));
+    return searchMatch && tagMatch;
   });
 
+  const handleQuestion = async(e :React.FormEvent) =>{
+      e.preventDefault();
+      const res = await fetch("http://localhost:5000/dashboard/forum/ask",{
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify({id:`Q-${Date.now()}`,title:ques,description:des,author:`${localStorage.getItem('name')} (${localStorage.getItem('role')})`,aid:localStorage.getItem("id")})
+      })
+      const data = await res.json();
+      if(res.ok){
+        setQuestions(data);
+        setQues("");
+        setDes("");
+        setAskModalOpen(false);
+        console.log("Success",data);
+      }
+  }
+  const handleAnswer =async() =>{
+  
+    if(!viewModalQ) return null;
+    const res = await fetch(`http://localhost:5000/dashboard/forum/ans/${viewModalQ.id}`,{
+      method:"POST",
+      headers:{'content-type':"application/json"},
+      body:JSON.stringify({id:`A-${Date.now()}`,answer:answerText,author:`${localStorage.getItem('name')} (${localStorage.getItem('role')})`,aid:localStorage.getItem("id")})
+    })
+    const data = await res.json();
+    if(res.ok){
+      setAnswerText("");    
+      setViewModalQ(data);
+      setAskModalOpen(false);
+      console.log("Success")
+    }
+    else console.log("Failed");
+
+
+  }
+  /* ---------- lock scroll when any modal open ---------- */
+  const modalOpen = askModalOpen || viewModalQ;
+  useEffect(() => {
+  fetch("http://localhost:5000/dashboard/forum/").then(res => res.json()).then(data => {setQuestions(data)}).catch(err => console.error(err));
+
+    document.body.style.overflow = modalOpen ? "hidden" : "auto";
+  }, [modalOpen]);
+
+  /* ---------- JSX ---------- */
   return (
     <div className="flex gap-6 p-6 bg-gray-50 min-h-screen">
-      {/* Sidebar */}
-      
-
-      {/* Main Content */}
+      {/* ============= Main content ============= */}
       <div className="flex-1">
         <div className="bg-white rounded-lg shadow-sm">
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b">
             <h1 className="text-2xl font-bold text-gray-900">Q&A Forum</h1>
             <button
-  onClick={() => setIsModalOpen(true)}
-  className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors flex items-center gap-2"
->
-  <Plus className="w-4 h-4" />
-  Ask Question
-</button>
-
+              onClick={() => setAskModalOpen(true)}
+              className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Ask Question
+            </button>
           </div>
 
-          {/* Search and Tags */}
+          {/* Search + Tags */}
           <div className="p-6 border-b">
             <div className="flex gap-4 items-center mb-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
-                  type="text"
-                  placeholder="Search questions..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search questions..."
+                  className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500"
                 />
               </div>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm text-gray-600">Tags:</span>
-              {displayedTags.map(tag => (
+              {displayedTags.map((tag) => (
                 <button
                   key={tag}
                   onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
                     selectedTags.includes(tag)
-                      ? 'bg-red-700 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? "bg-red-700 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   {tag}
@@ -186,125 +211,215 @@ const QAForum = () => {
               ))}
               <button
                 onClick={() => setShowMoreTags(!showMoreTags)}
-                className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                className="px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-700 hover:bg-gray-200"
               >
-                {showMoreTags ? 'Less Tags' : 'More Tags'}
-                <ChevronDown className={`w-3 h-3 inline ml-1 transition-transform ${showMoreTags ? 'rotate-180' : ''}`} />
+                {showMoreTags ? "Less Tags" : "More Tags"}
+                <ChevronDown
+                  className={`w-3 h-3 inline ml-1 transition-transform ${
+                    showMoreTags ? "rotate-180" : ""
+                  }`}
+                />
               </button>
             </div>
           </div>
 
-          {/* Questions List */}
+          {/* Question list */}
           <div className="p-6">
+            {filteredQuestions.length === 0 && (
+              <div className="text-center py-12">
+                <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">No questions found</h3>
+                <p className="text-gray-600">Try different search terms.</p>
+              </div>
+            )}
+
             <div className="space-y-6">
-              {filteredQuestions.map((question) => (
-                <div key={question.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+              {filteredQuestions.map((q) => (
+                <div
+                  key={q.id}
+                  className="border rounded-lg p-6 hover:shadow-md transition-shadow"
+                >
                   <div className="flex items-start gap-4">
-                    {/* Author Avatar */}
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                      <User className="w-5 h-5 text-gray-600" />
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                      {q.aa?<img src={q.aa} className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center"/>:<User className="w-5 h-5 text-gray-600" />}
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      {/* Author and Time */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="font-medium text-gray-900">{question.author}</span>
-                        <span className="text-gray-500">•</span>
-                        <span className="text-sm text-gray-500">{question.timeAgo}</span>
+                    <div className="flex-1">
+                      <div className="flex gap-2 text-sm text-gray-500 mb-1">
+                        <span className="font-medium text-gray-900">
+                          {q.author}
+                        </span>
+                        <span>•</span>
+                        <span>{timeAgo(q.id)}</span>
                       </div>
 
-                      {/* Question Title */}
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-red-700 cursor-pointer">
-                        {question.title}
+                      <h3 className="text-lg font-semibold mb-2">
+                        {q.title.charAt(0).toUpperCase()+q.title.slice(1)}
                       </h3>
 
-                      {/* Question Description */}
                       <p className="text-gray-600 mb-4 line-clamp-2">
-                        {question.description}
+                        {q.description.charAt(0).toUpperCase()+q.description.slice(1)}
                       </p>
 
-                      {/* Tags */}
+                      {/* tags */}
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {question.tags.map((tag, index) => (
-                          <span key={index} className={`px-2 py-1 rounded-full text-xs font-medium ${getTagColor(tag)}`}>
+                        {q.tags?.map((tag) => (
+                          <span
+                            key={tag}
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${tagColor(
+                              tag
+                            )}`}
+                          >
                             {tag}
                           </span>
                         ))}
                       </div>
 
-                      {/* Stats and Action */}
+                      {/* stats + button */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <MessageCircle className="w-4 h-4" />
-                            <span>{question.answers} Answers</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <ArrowUp className="w-4 h-4" />
-                            <span>{question.upvotes} Upvotes</span>
-                          </div>
+                        <div className="flex gap-4 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="w-4 h-4" /> {q.answers.length==0?"No ":q.answers.length}
+                            &nbsp;Answers
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <ArrowUp className="w-4 h-4" /> {q.upvotes}
+                            &nbsp;Upvotes
+                          </span>
                         </div>
-                        <Link href={`/dashboard/forum/${question.id}`}>
-  <button className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition-colors text-sm">
-    View Question
-  </button>
-</Link>
-
+                        <button
+                          onClick={() => setViewModalQ(q)}
+                          className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 text-sm"
+                        >
+                          View & Add answer
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-
-            {filteredQuestions.length === 0 && (
-              <div className="text-center py-12">
-                <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No questions found</h3>
-                <p className="text-gray-600">Try adjusting your search terms or tags.</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
-      {isModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white rounded-lg shadow-lg w-full max-w-xl p-6 relative">
-      <button
-        onClick={() => setIsModalOpen(false)}
-        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-      >
-        <X className="w-5 h-5" />
-      </button>
-      <h2 className="text-xl font-bold mb-4 text-gray-800">Ask a New Question</h2>
-      <form className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Title</label>
-          <input
-            type="text"
-            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-            placeholder="Enter your question title"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea
-            rows={4}
-            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-            placeholder="Describe your question in detail..."
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800"
-        >
-          Post Question
-        </button>
-      </form>
-    </div>
-  </div>
-)}
 
+      {/* ========= Ask‑Question Modal ========= */}
+      {askModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white w-full max-w-xl p-6 rounded-lg shadow-lg relative">
+            <button
+              onClick={() => setAskModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold mb-4">Ask a New Question</h2>
+            <form
+              className="space-y-4"
+              onSubmit={handleQuestion}
+            >
+              <input
+                className="w-full border rounded px-3 py-2"
+                placeholder="Question title"
+                value = {ques}
+                onChange={(e) => setQues(e.target.value)}
+                required
+              />
+              <textarea
+                rows={4}
+                className="w-full border rounded px-3 py-2"
+                placeholder="Describe your question..."
+                required
+                value = {des}
+                onChange = {(e) => setDes(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800"
+              >
+                Post Question
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========= View‑Question & Answer Modal ========= */}
+      {viewModalQ && (
+        <div className="fixed inset-0 z-50 flex items-center min-h-screen justify-center bg-black/50">
+          <div className={`bg-white w-full max-w-2xl h-screen p-6 rounded-lg shadow-lg relative max-h-[90vh]  transform transition-transform duration-300 ease-in-out translate-y-0 opacity-100'`}>
+            <button
+              onClick={() => {
+                setTimeout(() => setViewModalQ(null),300);
+                setAnswerText("");
+              }}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h2 className="text-xl font-bold mb-2">{viewModalQ.title}</h2>
+            <p className="text-gray-700 mb-4">{viewModalQ.description}</p>
+              <div className="h-80 overflow-y-auto ">
+            {/* answer textarea */}
+            {viewModalQ.answers.map((q) => (
+                <div
+                  key={q.id}
+                  className="border rounded-lg p-6 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                      {q.aa?<img src={q.aa} className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center"/>:<User className="w-5 h-5 text-gray-600" />}
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex gap-2 text-sm text-gray-500 mb-1">
+                        <span className="font-medium text-gray-900">
+                          {q.author}
+                        </span>
+                        <span>•</span>
+                        <span>{timeAgo(q.id)}</span>
+                      </div>
+
+                      <h3 className="text-lg font-semibold mb-2">
+                        {q.answer.charAt(0).toUpperCase()+q.answer.slice(1)}
+                      </h3>
+
+                      </div>
+                    </div>
+                  </div>
+              ))|| <h3 className="text-lg font-semibold mb-2">
+              No Answer
+            </h3>}
+            </div>
+            <label className="block text-sm font-medium mb-1">
+              Your Answer
+            </label>
+            <textarea
+              rows={5}
+              value={answerText}
+              onChange={(e) => setAnswerText(e.target.value)}
+              className="w-full h-20 border rounded px-3 py-2 mb-2 focus:ring-red-500"
+              placeholder="Type your answer here…"
+            />
+            <button
+              onClick={() => {
+                setTimeout(() => setViewModalQ(null),300);
+                setAnswerText("");
+              }}
+              className=" bg-gray-700 text-gray-300 px-5 py-2 mx-3 rounded hover:bg-gray-700"
+            >
+              Cancel</button>
+            <button
+              type="submit"
+              onClick={handleAnswer}
+              className="bg-red-700 text-white px-5 py-2 mx-3 rounded hover:bg-red-800"
+            >
+              Submit Answer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

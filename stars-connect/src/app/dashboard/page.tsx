@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState,useEffect} from "react";
+import {useRouter} from 'next/navigation'
 import {
   BookOpen,
   Users,
@@ -17,14 +18,6 @@ import {
 } from "lucide-react";
 
 // Types
-interface CurrentUser {
-  name: string;
-  role: "student" | "alumni" | "admin";
-  avatar: string;
-  department: string;
-  year: string;
-}
-
 interface Stat {
   label: string;
   value: string;
@@ -54,14 +47,16 @@ interface StatsCardProps {
 }
 
 const Dashboard = () => {
-  const currentUser: CurrentUser = {
-    name: "John Doe",
-    role: "student",
-    avatar:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&auto=format",
-    department: "Computer Science",
-    year: "3rd Year",
-  };
+  const [currentUser,setcurrentUser] = useState({name:"",role:"",avatar:""})
+  const router = useRouter();
+  const expire = localStorage.getItem("expire");
+  if(!expire || Date.now() > Number(expire)){
+      localStorage.clear();
+      router.push("/login");
+  }
+  useEffect(() =>{fetch("http://localhost:5000/dashboard/",{
+    method:"POST",headers:{'content-type':'application/json'},body:JSON.stringify({id:localStorage.getItem('id')})
+  }).then(res => res.json()).then(data => setcurrentUser(data.user)).catch(err => console.error(err))},[])
 
   const [showMeetingModal, setShowMeetingModal] = useState(false);
 
@@ -91,9 +86,9 @@ const Dashboard = () => {
 
   const getWelcomeMessage = (): string => {
     const messages: Record<string, string> = {
-      student: `Welcome back, ${currentUser.name}! Ready to continue your learning journey?`,
-      alumni: `Hello ${currentUser.name}! Thank you for giving back to the community.`,
-      admin: `Good day, ${currentUser.name}! Here's your system overview.`,
+      Student: `Welcome back, ${currentUser.name}! Ready to continue your learning journey?`,
+      Alumni: `Hello ${currentUser.name}! Thank you for giving back to the community.`,
+      Admin: `Good day, ${currentUser.name}! Here's your system overview.`,
     };
     return messages[currentUser.role];
   };
@@ -141,9 +136,9 @@ const Dashboard = () => {
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
         <h2 className="text-2xl font-bold mb-2">{getWelcomeMessage()}</h2>
         <p className="text-indigo-100">
-          {currentUser.role === "student" && `${currentUser.department} • ${currentUser.year}`}
-          {currentUser.role === "alumni" && "Making a difference in student lives"}
-          {currentUser.role === "admin" && "System administrator dashboard"}
+          {currentUser.role === "Student"}
+          {currentUser.role === "Alumni" && "Making a difference in student lives"}
+          {currentUser.role === "Admin" && "System administrator dashboard"}
         </p>
       </div>
 

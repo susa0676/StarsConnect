@@ -1,16 +1,45 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import Link from 'next/link';
+import {useRouter} from 'next/navigation'
+
 
 const LoginPage: React.FC = () => {
+  const router = useRouter();
+  useEffect(() =>{
+    fetch("http://localhost:5000/").then((res) => res.text()).then((data) => console.log("Backend connected")).catch(err => console.error("error"))
+  },[]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [status,setStatus] = useState("");
+  const [statType,setStatType] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
     // Handle login logic here
-    console.log('Login attempt:', { email, password });
+    
+    const res = await fetch('http://localhost:5000/login',{
+      method:'POST',
+      headers:{'Content-Type': 'application/json'},
+      body: JSON.stringify({ email,password})
+    });
+    const data = await res.json();
+    if(res.ok){
+      localStorage.setItem('name',data.name);
+      localStorage.setItem('expire',(Date.now()+1800000).toString())
+      localStorage.setItem('id',data.id)
+      localStorage.setItem('role',data.role);
+      localStorage.setItem('photo',data.photo);
+      console.log("Login successfully",new Date(Number(localStorage.getItem('expire'))))
+      router.push("/dashboard");
+    }
+    else{
+      console.log("Invalid credential");
+    }
+    setStatType(data.statType);
+    setStatus(data.status);
+    setTimeout(()=>{setStatType("");setStatus("")},4000)
   };
 
   const handleGoogleLogin = () => {
@@ -64,7 +93,7 @@ const LoginPage: React.FC = () => {
               <p className="text-gray-600">Sign in to your account</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form  className="space-y-6">
               {/* Email Field */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -122,14 +151,15 @@ const LoginPage: React.FC = () => {
                   </button>
                 </div>
               </div>
-
               {/* Login Button */}
-              <button
+              <button onClick={handleSubmit}
                 type="submit"
                 className="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 px-4 rounded-lg font-semibold hover:from-pink-600 hover:to-rose-600 transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
               >
                 Login
               </button>
+              {status && (<p className ={`text-center text-sm text-${statType == 'success' ? "green":"red"}-600`}>{status}</p>)}
+
             </form>
 
             {/* Divider */}

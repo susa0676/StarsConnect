@@ -1,6 +1,7 @@
 "use client"
 import Link from 'next/link';
-import { useState } from 'react';
+import {useRouter} from 'next/navigation'
+import { useState,useEffect } from 'react';
 import { Search, MapPin, Building, Award, Clock, Calendar, Star } from 'lucide-react';
 
 const FindMentor = () => {
@@ -8,139 +9,37 @@ const FindMentor = () => {
   const [selectedExperience, setSelectedExperience] = useState('');
   const [selectedCompany, setSelectedCompany] = useState('');
   const [availableOnly, setAvailableOnly] = useState(false);
-
-  const mentors = [
-    {
-      id: 1,
-      name: 'Dr. Emily Brown',
-      title: 'Senior Software Engineer at Microsoft',
-      location: 'Redmond, WA',
-      company: 'Microsoft',
-      experience: '8+ Years of Experience',
-      rating: 4.9,
-      sessions: 156,
-      expertise: ['Software Development', 'System Design', 'Career Growth'],
-      available: true,
-      image: '/api/placeholder/80/80',
-      price: 'Free',
-      description: 'Passionate about helping junior developers grow their technical and leadership skills.'
-    },
-    {
-      id: 2,
-      name: 'Michael Wong',
-      title: 'Lead Cybersecurity Engineer at Facebook',
-      location: 'San Francisco, CA',
-      company: 'Meta',
-      experience: '10+ Years of Experience',
-      rating: 4.8,
-      sessions: 203,
-      expertise: ['Cybersecurity', 'Network Security', 'Penetration Testing'],
-      available: true,
-      image: '/api/placeholder/80/80',
-      price: 'Free',
-      description: 'Expert in cybersecurity with extensive experience in threat detection and prevention.'
-    },
-    {
-      id: 3,
-      name: 'Dr. Arya Sharma',
-      title: 'Principal Data Scientist at SalesForce Labs',
-      location: 'Austin, TX',
-      company: 'Salesforce',
-      experience: '12+ Years of Experience',
-      rating: 4.9,
-      sessions: 289,
-      expertise: ['Data Science', 'Machine Learning', 'AI Research'],
-      available: true,
-      image: '/api/placeholder/80/80',
-      price: 'Free',
-      description: 'Helping aspiring data scientists master ML algorithms and statistical analysis.'
-    },
-    {
-      id: 4,
-      name: 'David Rodriguez',
-      title: 'Senior Full Stack Developer at Shopify',
-      location: 'Toronto, ON',
-      company: 'Shopify',
-      experience: '7+ Years of Experience',
-      rating: 4.7,
-      sessions: 134,
-      expertise: ['Full Stack Development', 'React', 'Node.js'],
-      available: true,
-      image: '/api/placeholder/80/80',
-      price: 'Free',
-      description: 'Passionate about modern web development and helping others build scalable applications.'
-    },
-    {
-      id: 5,
-      name: 'Sophia Lee',
-      title: 'AI Research Scientist at DeepMind',
-      location: 'London, UK',
-      company: 'DeepMind',
-      experience: '9+ Years of Experience',
-      rating: 4.9,
-      sessions: 167,
-      expertise: ['Artificial Intelligence', 'Deep Learning', 'Research'],
-      available: false,
-      image: '/api/placeholder/80/80',
-      price: 'Free',
-      description: 'Research scientist specializing in advanced AI systems and neural networks.'
-    },
-    {
-      id: 6,
-      name: 'James O\'Connell',
-      title: 'Senior DevOps Engineer at Netflix',
-      location: 'Los Angeles, CA',
-      company: 'Netflix',
-      experience: '11+ Years of Experience',
-      rating: 4.8,
-      sessions: 198,
-      expertise: ['DevOps', 'Cloud Architecture', 'Kubernetes'],
-      available: true,
-      image: '/api/placeholder/80/80',
-      price: 'Free',
-      description: 'Expert in cloud infrastructure and helping teams implement robust DevOps practices.'
-    },
-    {
-      id: 7,
-      name: 'Priya Patel',
-      title: 'Product Manager at Stripe',
-      location: 'San Francisco, CA',
-      company: 'Stripe',
-      experience: '6+ Years of Experience',
-      rating: 4.8,
-      sessions: 142,
-      expertise: ['Product Management', 'Strategy', 'Analytics'],
-      available: true,
-      image: '/api/placeholder/80/80',
-      price: 'Free',
-      description: 'Experienced product manager focused on fintech and payment solutions.'
-    },
-    {
-      id: 8,
-      name: 'Kenji Tanaka',
-      title: 'Senior UX Designer at Adobe',
-      location: 'San Jose, CA',
-      company: 'Adobe',
-      experience: '8+ Years of Experience',
-      rating: 4.7,
-      sessions: 176,
-      expertise: ['UX Design', 'User Research', 'Design Systems'],
-      available: true,
-      image: '/api/placeholder/80/80',
-      price: 'Free',
-      description: 'Passionate about creating intuitive user experiences and design thinking methodologies.'
-    }
-  ];
-
+  const router = useRouter();
+  const expire = localStorage.getItem("expire");
+  if(!expire || Date.now() > Number(expire)){
+      localStorage.clear();
+      router.push("/login");
+  }
+  type MentorData = {
+    id?: number,
+    name?: string,
+    bio?:string,
+    location?: string,
+    photo?:string,
+    company?: string,
+    experience?:string,
+    rating?: string,
+    sessions?: string,
+    expertise?: string[],
+    available?: boolean,
+    price?: string,
+    description?: 'Passionate about helping junior developers grow their technical and leadership skills.'
+  }
+  const [mentors,setMentors] = useState<MentorData[]>([]);
   const companies = ['All', 'Microsoft', 'Meta', 'Salesforce', 'Shopify', 'DeepMind', 'Netflix', 'Stripe', 'Adobe'];
   const experienceLevels = ['All', '5+ Years', '7+ Years', '10+ Years', '12+ Years'];
-
+  useEffect(() =>{fetch("http://localhost:5000/dashboard/mentors/").then((res) => res.json()).then((data) => setMentors(data)).catch((err) => console.error(err))});
   const filteredMentors = mentors.filter(mentor => {
-    const matchesSearch = mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         mentor.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         mentor.expertise.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = (mentor.name|| "Name not found").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (mentor.bio || "Bio not found").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (mentor.expertise || ["all"]).some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCompany = !selectedCompany || selectedCompany === 'All' || mentor.company === selectedCompany;
-    const matchesExperience = !selectedExperience || selectedExperience === 'All' || mentor.experience.includes(selectedExperience.split('+')[0]);
+    const matchesExperience = !selectedExperience || selectedExperience === 'All' || (mentor.expertise || ["all"]).includes(selectedExperience.split('+')[0]);
     const matchesAvailability = !availableOnly || mentor.available;
     
     return matchesSearch && matchesCompany && matchesExperience && matchesAvailability;
@@ -238,38 +137,40 @@ const FindMentor = () => {
       {/* Profile Header */}
       <div className="p-6 text-center">
         <div className="w-20 h-20 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
-          <span className="text-2xl font-bold text-gray-600">
-            {mentor.name.split(' ').map(n => n[0]).join('')}
-          </span>
+          {mentor.photo?
+              <img src={mentor.photo} className="w-20 h-20 mx-auto  bg-gray-200 rounded-full"/>:
+              <span className="text-2xl font-bold text-gray-600">{(mentor.name|| "Not a name").split(' ').map(n => n[0]).join('')}
+          </span>}
+          
         </div>
         <h3 className="font-semibold text-gray-900 mb-1">{mentor.name}</h3>
-        <p className="text-sm text-gray-600 mb-2">{mentor.title}</p>
+        <p className="text-sm text-gray-600 mb-2">{mentor.bio || "Title not updated"}</p>
         <div className="flex items-center justify-center text-sm text-gray-500 mb-2">
           <MapPin className="w-4 h-4 mr-1" />
-          {mentor.location}
+          {mentor.location || "Location not updated"}
         </div>
         <div className="flex items-center justify-center text-sm text-gray-600 mb-3">
           <Award className="w-4 h-4 mr-1" />
-          {mentor.experience}
+          {mentor.experience || "Experience not updated"}
         </div>
 
         {/* Rating and Sessions */}
         <div className="flex items-center justify-center gap-4 text-sm text-gray-600 mb-4">
           <div className="flex items-center">
             <Star className="w-4 h-4 text-yellow-400 mr-1" />
-            {mentor.rating}
+            {mentor.rating || "No rating"}
           </div>
           <div className="flex items-center">
             <Calendar className="w-4 h-4 mr-1" />
-            {mentor.sessions} sessions
+            {mentor.sessions || "No "} sessions
           </div>
         </div>
 
         {/* Expertise Tags */}
         <div className="flex flex-wrap gap-1 justify-center mb-4">
-          {mentor.expertise.slice(0, 2).map((skill, index) => (
-            <span key={index} className="px-2 py-1 bg-gray-100 text-xs text-gray-600 rounded">
-              {skill}
+          { (mentor.expertise || ['None']).map((skill, index) => (
+            <span className="px-2 py-1 bg-gray-100 text-xs text-gray-600 rounded">
+              {(skill)}
             </span>
           ))}
         </div>

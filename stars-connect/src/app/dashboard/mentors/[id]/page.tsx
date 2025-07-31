@@ -1,48 +1,41 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import {useEffect,useState } from 'react'
+import { useParams,useRouter} from "next/navigation";
 import { MapPin, Award, Calendar, Star } from "lucide-react";
 
 // Define type for mentor data
 type Mentor = {
-  name: string;
-  title: string;
-  location: string;
-  experience: string;
-  sessions: number;
-  rating: number;
-  available: boolean;
-  bio: string;
-  expertise: string[];
-  image: string;
+  id?:number,
+  name?: string;
+  title?: string;
+  location?: string;
+  experience?: string;
+  sessions?: number;
+  rating?: number;
+  available?: boolean;
+  bio?: string;
+  expertise?: string[];
+  photo?: string;
 };
 
 // Use string keys instead of numbers
-const mentorData: Record<string, Mentor> = {
-  "1": {
-    name: "Dr. Emily Brown",
-    title: "Senior Software Engineer at Microsoft",
-    location: "Redmond, WA",
-    experience: "8+ Years of Experience",
-    sessions: 156,
-    rating: 4.9,
-    available: true,
-    bio: "Emily is passionate about helping junior developers grow their technical and leadership skills. She has mentored 150+ students across multiple platforms.",
-    expertise: ["Software Development", "System Design", "Career Growth"],
-    image: "/api/placeholder/160/160",
-  },
-  // Add more mentor profiles as needed
-};
 
 export default function MentorProfilePage() {
+  const router = useRouter();
+  const expire = localStorage.getItem("expire");
+  if(!expire || Date.now() > Number(expire)){
+      localStorage.clear();
+      router.push("/login");
+  }
   const params = useParams();
   const idParam = Array.isArray(params?.id) ? params.id[0] : params?.id;
-
   if (!idParam) {
     return <div className="p-6">Invalid mentor ID</div>;
   }
-
-  const mentor = mentorData[idParam];
+  
+  const [mentor,setMentor] = useState<Mentor | null>(null);
+  useEffect(() =>{fetch(`http://localhost:5000/dashboard/mentors/${idParam}`,).then((res) => res.json()).then((data) => {setMentor(data)}).catch((err) => console.error(err))},[idParam])
 
   if (!mentor) {
     return <div className="p-6">Mentor not found</div>;
@@ -54,7 +47,7 @@ export default function MentorProfilePage() {
         {/* Profile Header */}
         <div className="flex flex-col md:flex-row items-center gap-6 mb-6">
           <img
-            src={mentor.image}
+            src={mentor.photo}
             alt={mentor.name}
             className="w-40 h-40 rounded-full object-cover border-2 border-gray-200"
           />
@@ -72,17 +65,17 @@ export default function MentorProfilePage() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center mb-6">
           <div className="flex flex-col items-center">
             <Award className="w-5 h-5 text-red-600 mb-1" />
-            <p className="font-medium text-gray-800">{mentor.experience}</p>
+            <p className="font-medium text-gray-800">{mentor.experience ||'Not updated'}</p>
             <span className="text-xs text-gray-500">Experience</span>
           </div>
           <div className="flex flex-col items-center">
             <Calendar className="w-5 h-5 text-red-600 mb-1" />
-            <p className="font-medium text-gray-800">{mentor.sessions}</p>
+            <p className="font-medium text-gray-800">{mentor.sessions ||'No '}</p>
             <span className="text-xs text-gray-500">Sessions</span>
           </div>
           <div className="flex flex-col items-center">
             <Star className="w-5 h-5 text-yellow-500 mb-1" />
-            <p className="font-medium text-gray-800">{mentor.rating}</p>
+            <p className="font-medium text-gray-800">{mentor.rating ||'No one '}</p>
             <span className="text-xs text-gray-500">Rating</span>
           </div>
         </div>
@@ -97,9 +90,8 @@ export default function MentorProfilePage() {
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">Expertise</h2>
           <div className="flex flex-wrap gap-2">
-            {mentor.expertise.map((skill: string, index: number) => (
+            {(mentor.expertise||["None"]).map((skill: string, index: number) => (
               <span
-                key={index}
                 className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm"
               >
                 {skill}

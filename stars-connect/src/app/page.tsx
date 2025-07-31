@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const LandingPage: React.FC = () => {
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Navigation */}

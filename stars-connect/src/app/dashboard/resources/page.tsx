@@ -1,8 +1,24 @@
 "use client"
-import { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { Search, Download, FileText, Code, Database, Users, CheckSquare, Book, X } from 'lucide-react';
+import {useRouter} from "next/navigation"
+import Link from 'next/link';
+
+import { url } from 'inspector';
+import { Url } from 'next/dist/shared/lib/router/router';
 
 const ResourceLibrary = () => {
+  
+  type FileResources = {
+    id:string,
+    uid:string,
+    title: string,
+    uploadedBy: string,
+    role:string,
+    uploadedAt: string,
+    downloadUrl:string,
+    category: string
+  };
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedFileType, setSelectedFileType] = useState('All');
@@ -12,16 +28,60 @@ const ResourceLibrary = () => {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-
-  const handleUploadSubmit = (e: React.FormEvent) => {
+  const [resources,setResources] = useState<FileResources[]>([]);
+  
+  const router = useRouter();
+  const expire = localStorage.getItem("expire");
+  if(!expire || Date.now() > Number(expire)){
+      localStorage.clear();
+      router.push("/login");
+  }
+  useEffect(() =>{ 
+    fetch("http://localhost:5000/dashboard/resources/").then((res) => res.json()).then((data) => setResources(data)).catch(err => console.error("error"))
+  })
+  const icon = [
+    <FileText className="w-6 h-6 text-blue-600" />,<Code className="w-6 h-6 text-gray-600" />,
+    <Database className="w-6 h-6 text-pink-600" />, <Book className="w-6 h-6 text-red-600" />
+  ]
+  const bg = ['red','gray','orange','pink']
+  
+  let recentlyUploaded = [{
+    title: 'Operating Systems - Exam Paper',
+    uploadedBy: 'Alice Johnson',
+    icon: <FileText className="w-4 h-4 text-blue-600" />
+  }];
+  let popularResources = [{
+    title: 'Data Structures and Algorithms',
+    uploadedBy: 'Alice Johnson',
+    icon: <Book className="w-4 h-4 text-gray-800" />
+  }]
+  const handleUploadSubmit = async(e : React.FormEvent) => {
     e.preventDefault();
     if (!title || !file) {
       setError("Please enter a title and choose a file.");
       return;
     }
-    console.log("Uploading:", { title, description, file });
-    setSuccess(true);
-    setTimeout(() => {
+    const formData = new FormData();
+    formData.append('title',title);
+    formData.append("description",description);
+    formData.append('file',file);
+    formData.append('uid',localStorage.getItem('id') || "") ;
+
+    formData.append('uploadedBy',localStorage.getItem('name') || 'John');
+    formData.append('role',localStorage.getItem('role') || 'Student') ;
+    
+    const res = await fetch("http://localhost:5000/dashboard/resources/upload",{
+        method:'POST',
+        body:formData
+    })
+    const data = await res.json();
+    if(res.ok){
+      setResources(prev => data)
+      console.log("Uploaded");
+    }
+
+      setSuccess(true);
+      setTimeout(() => {
       setSuccess(false);
       setTitle('');
       setDescription('');
@@ -30,7 +90,7 @@ const ResourceLibrary = () => {
     }, 1500);
   };
 
-  const resources = [
+ /* const resources = [
     {
       id: 1,
       title: 'Operating Systems - Exam Paper S23',
@@ -81,7 +141,7 @@ const ResourceLibrary = () => {
       title: 'Internship Application Checklist',
       uploadedBy: 'Frank White',
       uploadDate: '2023-11-09',
-      icon: <CheckSquare className="w-6 h-6 text-orange-600" />,
+      icon: ,
       bgColor: 'bg-orange-50',
       category: 'Career'
     }
@@ -121,7 +181,7 @@ const ResourceLibrary = () => {
       uploadedBy: 'Diana Miller',
       icon: <FileText className="w-4 h-4 text-pink-600" />
     }
-  ];
+  ];*/
 
   const categories = ['All', 'Academic', 'Career', 'Practice', 'Interview'];
   const fileTypes = ['All', 'PDF', 'DOC', 'PPT', 'XLS'];
@@ -145,14 +205,14 @@ const ResourceLibrary = () => {
             <form onSubmit={handleUploadSubmit} className="space-y-4">
               <input
                 type="text"
-                placeholder="Resource Title"
+                placeholder="Resource Title" required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-3 py-2 border rounded-md"
               />
               <textarea
                 placeholder="Description (optional)"
-                value={description}
+                value={description} required
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full px-3 py-2 border rounded-md"
               />
@@ -225,28 +285,30 @@ const ResourceLibrary = () => {
           {/* Resource Grid */}
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredResources.map((resource) => (
-                <div key={resource.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              {filteredResources.map((resource,index) => (
+                  <Link href={`/dashboard/resources/${resource.id}`} key={resource.id}>
+
+                <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${resource.bgColor}`}>
-                      {resource.icon}
+                    <div className={`p-2 rounded-lg bg-${bg[index%4]}-50`}>
+                      {icon[index%4]}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                        {resource.title}
+                        {resource.title.toUpperCase()}
                       </h3>
                       <div className="text-sm text-gray-600 space-y-1">
-                        <p>Uploaded By: {resource.uploadedBy}</p>
-                        <p>Upload Date: {resource.uploadDate}</p>
+                        <p>Uploaded By: {resource.uploadedBy} ({resource.role})</p>
+                        <p>Uploaded Date: {resource.uploadedAt.slice(0,10)}</p>
                       </div>
                     </div>
                   </div>
                   <div className="mt-4 flex justify-center">
-                    <button className="text-gray-600 hover:text-gray-800 transition-colors">
+                    <a href={resource.downloadUrl} className="text-gray-600  hover:text-gray-800 transition-colors">
                       <Download className="w-4 h-4" />
-                    </button>
+                    </a>
                   </div>
-                </div>
+                </div></Link>
               ))}
             </div>
           </div>

@@ -1,14 +1,18 @@
 "use client"
 import React, { useState } from 'react';
 import { User, GraduationCap, Briefcase, Shield } from 'lucide-react';
-
+import {useRouter} from 'next/navigation'
 const RegistrationForm = () => {
+  const router = useRouter();
   const [selectedRole, setSelectedRole] = useState('');
+  const [status,setStatus] = useState("");
+  const [statType,setStatType] = useState("");
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
+    role:'',
     // Student fields
     rollNo: '',
     dept: '',
@@ -25,7 +29,32 @@ const RegistrationForm = () => {
     adminCode: '',
     designation: ''
   });
-
+  const departments = [
+    "Computer Science and Engineering (CSE)",
+    "Information Technology (IT)",
+    "Electronics and Communication Engineering (ECE)",
+    "Electrical and Electronics Engineering (EEE)",
+    "Mechanical Engineering (ME)",
+    "Civil Engineering (CE)",
+    "Aerospace Engineering",
+    "Biotechnology",
+    "Biomedical Engineering",
+    "Chemical Engineering",
+    "Fashion Technology",
+    "Artificial Intelligence and Data Science",
+    "Artificial Intelligence and Machine Learning",
+    "CSE - Business Systems with Data Analytics (TCS Collaboration)",
+    "CSE - Blockchain Technology",
+    "Robotics and Automation",
+    "CSE - Gaming Technology",
+    "CSE - Cyber Security and Digital Forensics",
+    "CSE - Internet of Things (IoT)",
+    "CSE - Human Computer Interaction",
+    "Mechatronics",
+    "Manufacturing Engineering"
+  ];
+  
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
 
     const { name, value } = e.target;
@@ -35,7 +64,46 @@ const RegistrationForm = () => {
     }));
   };
 
-  const handleRoleChange = (role) => {
+  const handleRegister = async(e: React.FormEvent<HTMLFormElement>) =>{
+    e.preventDefault();
+
+  const form = e.currentTarget as HTMLFormElement; // ✅ This is the correct reference to the form element
+
+  if (!form.checkValidity()) {
+    form.reportValidity(); // 🔍 This triggers the browser validation message
+    return;
+  }
+    if (formData.password !== formData.confirmPassword) {
+      setStatus("Password and confirm password do not match")
+      setStatType('failed');
+      setTimeout(() => {setStatus('');setStatType('')},5000)
+      return;
+    }
+    setStatus("Registered successfully");
+    setStatType('success');
+    setTimeout(() => {setStatus('');setStatType('')},5000)
+    formData.role = selectedRole;
+    formData.confirmPassword = '';
+    let roleData = Object.fromEntries(Object.entries(formData).filter(([k,value]) => (value !== null && value !== undefined && value !== '')))
+    const res = await fetch('http://localhost:5000/register',{
+      method:'POST',
+      headers:{'Content-Type': 'application/json'},
+      body: JSON.stringify(roleData)
+    });
+    const data = await res.json();
+    if(res.ok){
+      console.log('Registration successful');
+      router.push('/login');
+    }
+    else{
+      console.log("Registration failed");
+      router.push('/register');
+    }
+    setStatus(data.status)
+    setStatType(data.statType);
+    setTimeout(() => {setStatus('');setStatType('')})
+  }
+  const handleRoleChange = (role: React.SetStateAction<string>) => {
     setSelectedRole(role);
     // Reset role-specific fields when switching roles
     setFormData(prev => ({
@@ -55,23 +123,14 @@ const RegistrationForm = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
-      return;
-    }
-    console.log('Registration data:', { role: selectedRole, ...formData });
-    alert(`Registration successful for ${selectedRole}!`);
-  };
-
   const roleOptions = [
     { value: 'student', label: 'Student', icon: GraduationCap, color: 'bg-blue-500' },
     { value: 'alumni', label: 'Alumni', icon: Briefcase, color: 'bg-green-500' },
-    { value: 'admin', label: 'Admin', icon: Shield, color: 'bg-purple-500' }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 relative overflow-hidden">
+    
+    < div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 relative overflow-hidden">
       {/* Background Logo Pattern */}
       <div className="absolute inset-0 opacity-5 pointer-events-none">
         <div className="flex flex-wrap justify-center items-center h-full gap-32">
@@ -105,17 +164,18 @@ const RegistrationForm = () => {
 
           <div className="space-y-6">
             {/* Role Selection */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Select Your Role</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {roleOptions.map((role) => {
+            <div className="flex flex-col items-center space-y-4">
+    <h3 className="text-lg font-semibold text-gray-900">Select Your Role</h3>
+    
+    <div className="flex flex-row justify-center gap-5 flex-wrap ">
+       {roleOptions.map((role) => {
                   const IconComponent = role.icon;
                   return (
                     <button
                       key={role.value}
                       type="button"
                       onClick={() => handleRoleChange(role.value)}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                      className={`p-4 rounded-xl border-2 w-60 h-30 transition-all duration-200 ${
                         selectedRole === role.value
                           ? `border-indigo-500 bg-indigo-50 shadow-md`
                           : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
@@ -134,6 +194,8 @@ const RegistrationForm = () => {
             </div>
 
             {selectedRole && (
+              <form onSubmit={handleRegister}>
+
               <div className="space-y-6 animate-fadeIn">
                 {/* Common Fields */}
                 <div className="space-y-4">
@@ -240,14 +302,11 @@ const RegistrationForm = () => {
                           required
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         >
-                          <option value="">Select Department</option>
-                          <option value="CSE">Computer Science</option>
-                          <option value="ECE">Electronics & Communication</option>
-                          <option value="EEE">Electrical & Electronics</option>
-                          <option value="MECH">Mechanical</option>
-                          <option value="CIVIL">Civil</option>
-                          <option value="IT">Information Technology</option>
-                        </select>
+                          <option value="" disabled >Select Department</option>
+                          {departments.map((dept) => (
+                              <option key={dept} value={dept}>{dept}
+    </option>
+  ))}              </select>
                       </div>
                       
                       <div>
@@ -261,7 +320,7 @@ const RegistrationForm = () => {
                           required
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         >
-                          <option value="">Select Year</option>
+                          <option value="" disabled >Select Year</option>
                           <option value="1">1st Year</option>
                           <option value="2">2nd Year</option>
                           <option value="3">3rd Year</option>
@@ -294,7 +353,6 @@ const RegistrationForm = () => {
                         value={formData.skills}
                         onChange={handleInputChange}
                         required
-                        rows="3"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         placeholder="List your technical skills (e.g., JavaScript, Python, React)"
                       />
@@ -366,9 +424,8 @@ const RegistrationForm = () => {
                         value={formData.expertise}
                         onChange={handleInputChange}
                         required
-                        rows="3"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        placeholder="Describe your areas of expertise and what you can mentor students in"
+                        placeholder="What you can mentor students in (e.g.,Blockchain, Cybersecurity, DevOps)"
                       />
                     </div>
 
@@ -383,52 +440,10 @@ const RegistrationForm = () => {
                         required
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                       >
-                        <option value="">Select Availability</option>
-                        <option value="high">High (Available most of the time)</option>
-                        <option value="medium">Medium (Available on weekends)</option>
-                        <option value="low">Low (Available occasionally)</option>
-                        <option value="none">Not available for mentoring</option>
+                        <option value="" disabled hidden>---Select available---</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
                       </select>
-                    </div>
-                  </div>
-                )}
-
-                {selectedRole === 'admin' && (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                      Admin Information
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Admin Code *
-                        </label>
-                        <input
-                          type="text"
-                          name="adminCode"
-                          value={formData.adminCode}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                          placeholder="Optional admin verification code"
-                        />
-                        <p className="text-sm text-gray-500 mt-1">Leave blank if not provided</p>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Designation *
-                        </label>
-                        <input
-                          type="text"
-                          name="designation"
-                          value={formData.designation}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                          placeholder="e.g., System Administrator, Faculty Coordinator"
-                        />
-                      </div>
                     </div>
                   </div>
                 )}
@@ -436,13 +451,12 @@ const RegistrationForm = () => {
                 {/* Submit Button */}
                 <div className="pt-6">
                   <button
-                    onClick={handleSubmit}
                     className="w-full bg-gradient-to-r from-red-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:from-red-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200"
                   >
                     Create {selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)} Account
                   </button>
                 </div>
-
+                {status && (<p className ={`text-center text-sm text-${statType == 'success' ? "green":"red"}-600`}>{status}</p>)}
                 <div className="text-center pt-4">
                   <p className="text-gray-600">
                     Already have an account?{' '}
@@ -451,7 +465,7 @@ const RegistrationForm = () => {
                     </a>
                   </p>
                 </div>
-              </div>
+              </div></form>
             )}
           </div>
         </div>
